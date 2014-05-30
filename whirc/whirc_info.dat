@@ -124,7 +124,7 @@ N1/ccd_123.fits.gz 2014-05-16 dark dark +08:20:11.653 +30:24:33.180 5.0 yes
 N1/ccd_124.fits.gz 2014-05-16 35979J object +08:20:11.675 +30:24:31.983 60.0 yes 
 N1/ccd_125.fits.gz 2014-05-16 35979J object +08:20:09.741 +30:24:06.292 60.0 yes 
 N1/ccd_126.fits.gz 2014-05-16 35979J object +08:20:13.547 +30:24:55.124 60.0 yes
-127________missing date______ object object ____ra_______ ______dec____ no__ no 
+N1/ccd_127_missing date______ object object ____ra_______ ______dec____ no__ no 
 N1/ccd_128.fits.gz 2014-05-16 35979J object +08:20:13.506 +30:24:04.572 60.0 yes 
 N1/ccd_129.fits.gz 2014-05-16 35979J object +08:20:11.604 +30:24:29.171 60.0 yes 
 N1/ccd_130.fits.gz 2014-05-16 35979K object +08:20:11.635 +30:24:28.422 60.0 yes 
@@ -1029,7 +1029,7 @@ N3/ccd_280.fits.gz 2014-05-18 54655K object +14:13:32.724 +40:34:43.897 60.0 yes
 N3/ccd_281.fits.gz 2014-05-18 54655K object +14:13:30.110 +40:34:44.269 60.0 yes 
 N3/ccd_282.fits.gz 2014-05-18 54655K object +14:13:30.198 +40:35:13.842 60.0 yes 
 N3/ccd_283.fits.gz 2014-05-18 54655K object +14:13:32.829 +40:35:13.447 60.0 yes 
-284_missing_______ date______ object object ___ra________ ____dec______ no__ no
+N3/ccd_284_missing date______ object object ___ra________ ____dec______ no__ no
 N3/ccd_285.fits.gz 2014-05-18 54655K object +14:13:30.170 +40:34:43.908 3.77 no 
 N3/ccd_286.fits.gz 2014-05-18 54655K object +14:13:27.492 +40:34:13.736 60.0 yes 
 N3/ccd_287.fits.gz 2014-05-18 54655K object +14:13:30.108 +40:34:13.527 60.0 yes 
@@ -1127,7 +1127,7 @@ N3/ccd_378.fits.gz 2014-05-18 121130K object +15:32:12.112 +11:09:23.642 60.0 ye
 N3/ccd_379.fits.gz 2014-05-18 121130K object +15:32:10.100 +11:09:23.506 60.0 yes 
 N3/ccd_380.fits.gz 2014-05-18 121130K object +15:32:08.25 +11:09:22.703 60.0 yes 
 N3/ccd_381.fits.gz 2014-05-18 121130K object +15:32:08.57 +11:09:52.393 60.0 yes 
-382___missing_____ date______ object_ object ___ra_______ ______dec____ no__ no
+N3/ccd_382_missing date______ object_ object ___ra_______ ______dec____ no__ no
 N3/ccd_383.fits.gz 2014-05-18 121130K object +15:32:12.99 +11:09:51.776 60.0 yes 
 N3/ccd_384.fits.gz 2014-05-18 121130f object +15:31:26.36 +10:54:06.642 5.0 no 
 N3/ccd_385.fits.gz 2014-05-18 121130f object +15:31:24.677 +10:54:56.711 5.0 no 
@@ -1148,7 +1148,7 @@ N3/ccd_399.fits.gz 2014-05-18 121130K object +15:32:10.226 +11:09:20.993 60.0 ye
 N3/ccd_400.fits.gz 2014-05-18 121130K object +15:32:08.182 +11:09:19.913 60.0 yes 
 N3/ccd_401.fits.gz 2014-05-18 121130K object +15:32:08.187 +11:09:49.516 60.0 yes 
 N3/ccd_402.fits.gz 2014-05-18 121130K object +15:32:10.200 +11:09:48.912 60.0 yes 
-403_missing_______ _date_____ object_ object ____ra_______ ______dec____ no__ no
+N3/ccd_403_missing _date_____ object_ object ____ra_______ ______dec____ no__ no
 N3/ccd_404.fits.gz 2014-05-18 121130J object +15:32:08.161 +11:08:48.120 60.0 yes 
 N3/ccd_405.fits.gz 2014-05-18 121130J object +15:32:10.227 +11:08:46.992 60.0 yes 
 N3/ccd_406.fits.gz 2014-05-18 121130J object +15:32:12.215 +11:08:46.441 60.0 yes 
