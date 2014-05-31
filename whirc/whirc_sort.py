@@ -1,5 +1,6 @@
-# Sorts data from Raw/ folder (in N1/, N2/, N3) into
-# several different folders for flats, bias, different objects, etc
+#Right now, this makes flats from raw data
+#It would be pretty simple to add a few lines to read in the bias
+#and subtract the bias from everything before it starts making flats. 
 
 # Run in the directory above Raw/, Calibs/, and Final/ 
 
@@ -117,6 +118,66 @@ def whirc_sort():
     #Write to directory
     JFFO = pyfits.PrimaryHDU(JFO)
     JFFO.writeto('Calibs/J_flat_on.fits', clobber = True)
+        
+    #FOR EACH J-FLAT-OFF, READ IMAGE AND ADD TO ARRAY
+    J_flat_off_median = []
+    all_J_flat_off = [] 
+    for element in J_flat_off_locs:
+        im_J_off = pyfits.getdata(element)
+        im_J_off = im_J_off[0:2048,0:2048]
+        all_J_flat_off.append(im_J_off)
+        J_flat_off_median.append(float(np.median(im_J_off)))
+        print np.shape(all_J_flat_off), np.median(im_J_off)
     
-    plt.hist(J_flat_on_median)
+    #Median combine
+    JFOF = np.median(all_J_flat_off, axis = 0)
+    
+    #Write to directory
+    JFFOF = pyfits.PrimaryHDU(JFOF)
+    JFFOF.writeto('Calibs/J_flat_off.fits', clobber = True)
+    
+    #FOR EACH K-FLAT-ON, READ IMAGE AND ADD TO ARRAY
+    K_flat_on_median = []
+    all_K_flat_on = [] 
+    for element in K_flat_on_locs:
+        im_K_on = pyfits.getdata(element)
+        im_K_on = im_K_on[0:2048,0:2048]
+        all_K_flat_on.append(im_K_on)
+        K_flat_on_median.append(float(np.median(im_K_on)))
+        print np.shape(all_K_flat_on), np.median(im_K_on)
+        
+    #Median combine
+    KFO = np.median(all_K_flat_on, axis = 0)
+    
+    #Write to directory
+    KFFO = pyfits.PrimaryHDU(KFO)
+    KFFO.writeto('Calibs/K_flat_on.fits', clobber = True)
+    
+    #FOR EACH K-FLAT-OFF, READ IMAGE AND ADD TO ARRAY
+    K_flat_off_median = []
+    all_K_flat_off = [] 
+    for element in K_flat_off_locs:
+        im_K_off = pyfits.getdata(element)
+        im_K_off = im_K_off[0:2048,0:2048]
+        all_K_flat_off.append(im_K_off)
+        K_flat_off_median.append(float(np.median(im_K_off)))
+        print np.shape(all_K_flat_off), np.median(im_K_off)
+    
+    #Median combine
+    KFOF = np.median(all_K_flat_off, axis = 0)
+    
+    #Write to directory
+    KFFOF = pyfits.PrimaryHDU(KFOF)
+    KFFOF.writeto('Calibs/K_flat_off.fits', clobber = True)
+    
+    #SUBTRACTING DARKS FROM LIGHTS
+    J_master = JFO - JFOF
+    K_master = KFO - KFOF
+    
+    J_mas = pyfits.PrimaryHDU(J_master)
+    J_mas.writeto('Calibs/J_master_flat.fits', clobber = True)
+    
+    K_mas = pyfits.PrimaryHDU(K_master)
+    K_mas.writeto('Calibs/K_master_flat.fits', clobber = True)
+#    plt.hist(J_flat_on_median)
         
