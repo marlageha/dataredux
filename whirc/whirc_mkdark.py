@@ -2,12 +2,18 @@
 # in the "whirc_info.dat" log
 
 # Run in directory above Raw/, Calibs/, Final/
+# There are 97 darks; this takes about an hour to run on my machine. 
 
 import pyfits
 import numpy as np
 
 def whirc_mkdark():
     
+    #Read in the bias file to be subtracted from darks
+    bias = pyfits.getdata("Calibs/bias.fits")
+    bias = bias[0:2048,0:2048]
+    
+    #Read in log to identify darks
     im1 = open('whirc_info.dat','r')
     data1 = im1.readlines()
     im1.close()
@@ -64,6 +70,7 @@ def whirc_mkdark():
     for i in darkpath:
         im = pyfits.getdata(i)
         im = im[0:2048,0:2048]
+        im = im - bias #subtract bias from each dark
         alldarks.append(im)
         print np.shape(alldarks), np.median(im)
         
