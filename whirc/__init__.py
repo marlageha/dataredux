@@ -3,5 +3,6 @@ from whirc_mkbias import whirc_mkbias
 from whirc_info import whirc_info
 from whirc_sort import whirc_sort
 from whirc_mkflat import whirc_mkflat
-__all__ = ['whirc_setup','whirc_mkbias','whirc_mkflat']
+from whirc_mkdark import whirc_mkdark
+__all__ = ['whirc_setup','whirc_mkbias','whirc_mkflat','whirc_info','whirc_sort','whirc_mkdark']
 
