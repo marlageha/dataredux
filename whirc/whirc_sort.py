@@ -10,11 +10,14 @@ import matplotlib.pyplot as plt
 
 def whirc_sort():
     
+    #Read in the bias file to be subtracted from flats
+    bias = pyfits.getdata("Calibs/bias.fits")
+    bias = bias[0:2048,0:2048]
+    
     #Read in data from "whirc_info.dat" (the observation log)
     im1 = open('whirc_info.dat','r')
     data1 = im1.readlines()
     im1.close()
-    
     
     filename = []
     dateobs = []
@@ -102,12 +105,13 @@ def whirc_sort():
     for line in range(len(K_flat_off)):
         K_flat_off_locs.append("Raw/"+str(K_flat_off[line][0]))
 
-    #FOR EACH J-FLAT-ON, READ IMAGE AND ADD TO ARRAY
+    #FOR EACH J-FLAT-ON, READ IMAGE, SUBTRACT BIAS, AND ADD TO ARRAY
     J_flat_on_median = []
     all_J_flat_on = [] 
     for element in J_flat_on_locs:
         im_J_on = pyfits.getdata(element)
         im_J_on = im_J_on[0:2048,0:2048]
+        im_J_on = im_J_on - bias
         all_J_flat_on.append(im_J_on)
         J_flat_on_median.append(float(np.median(im_J_on)))
         print np.shape(all_J_flat_on), np.median(im_J_on)
@@ -118,13 +122,15 @@ def whirc_sort():
     #Write to directory
     JFFO = pyfits.PrimaryHDU(JFO)
     JFFO.writeto('Calibs/J_flat_on.fits', clobber = True)
+    print "Done with J_flat_on"
         
-    #FOR EACH J-FLAT-OFF, READ IMAGE AND ADD TO ARRAY
+    #FOR EACH J-FLAT-OFF, READ IMAGE, SUBTRACT BIAS, AND ADD TO ARRAY
     J_flat_off_median = []
     all_J_flat_off = [] 
     for element in J_flat_off_locs:
         im_J_off = pyfits.getdata(element)
         im_J_off = im_J_off[0:2048,0:2048]
+        im_J_off = im_J_off - bias
         all_J_flat_off.append(im_J_off)
         J_flat_off_median.append(float(np.median(im_J_off)))
         print np.shape(all_J_flat_off), np.median(im_J_off)
@@ -135,13 +141,15 @@ def whirc_sort():
     #Write to directory
     JFFOF = pyfits.PrimaryHDU(JFOF)
     JFFOF.writeto('Calibs/J_flat_off.fits', clobber = True)
+    print "Done with J_flat_off"
     
-    #FOR EACH K-FLAT-ON, READ IMAGE AND ADD TO ARRAY
+    #FOR EACH K-FLAT-ON, READ IMAGE, SUBTRACT BIAS, AND ADD TO ARRAY
     K_flat_on_median = []
     all_K_flat_on = [] 
     for element in K_flat_on_locs:
         im_K_on = pyfits.getdata(element)
         im_K_on = im_K_on[0:2048,0:2048]
+        im_K_on = im_K_on - bias
         all_K_flat_on.append(im_K_on)
         K_flat_on_median.append(float(np.median(im_K_on)))
         print np.shape(all_K_flat_on), np.median(im_K_on)
@@ -152,13 +160,15 @@ def whirc_sort():
     #Write to directory
     KFFO = pyfits.PrimaryHDU(KFO)
     KFFO.writeto('Calibs/K_flat_on.fits', clobber = True)
+    print "Done with K_flat_on"
     
-    #FOR EACH K-FLAT-OFF, READ IMAGE AND ADD TO ARRAY
+    #FOR EACH K-FLAT-OFF, READ IMAGE, SUBTRACT BIAS, AND ADD TO ARRAY
     K_flat_off_median = []
     all_K_flat_off = [] 
     for element in K_flat_off_locs:
         im_K_off = pyfits.getdata(element)
         im_K_off = im_K_off[0:2048,0:2048]
+        im_K_off = im_K_off - bias
         all_K_flat_off.append(im_K_off)
         K_flat_off_median.append(float(np.median(im_K_off)))
         print np.shape(all_K_flat_off), np.median(im_K_off)
@@ -169,6 +179,7 @@ def whirc_sort():
     #Write to directory
     KFFOF = pyfits.PrimaryHDU(KFOF)
     KFFOF.writeto('Calibs/K_flat_off.fits', clobber = True)
+    print "Done with K_flat_off"
     
     #SUBTRACTING DARKS FROM LIGHTS
     J_master = JFO - JFOF
