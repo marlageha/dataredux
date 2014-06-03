@@ -67,24 +67,12 @@ def whirc_mkbias():
         if "bias" in good[line][2]:
             bias.append(good[line])
     print 'Number of Bias to combine = ' + str(len(bias))
-    
-    #Find dark files
-    darks = []
-    for line in range(len(good)):
-        if "dark" in good[line][2]:
-            darks.append(good[line])
-    print 'Number of darks to combine = ' + str(len(darks))
             
     #Find path to bias
     biaspath = []
     for line in range(len(bias)):
         biaspath.append("Raw/"+str(bias[line][0]))
    
-    #Find path to darks
-    darkpath = []
-    for line in range(len(darks)):
-        darkpath.append("Raw/"+str(darks[line][0]))
-
     # FOR EACH BIAS, READ IMAGE AND ADD TO ARRAY
     allbias=[]
     for i in biaspath:    
@@ -99,16 +87,3 @@ def whirc_mkbias():
 	# WRITE TO DIRECTORY
     fits = pyfits.PrimaryHDU(bias)
     fits.writeto('Calibs/bias.fits',clobber=True)
-    
-    print "writing darks..."
-    # FOR EACH DARK, READ IMAGE AND ADD TO ARRAY
-    alldarks = []
-    for i in darkpath:
-        im = pyfits.getdata(i)
-        im = im[0:2048,0:2048]
-        alldarks.append(im)
-        print np.shape(alldarks), np.median(im)
-        
-    #WRITE TO DIRECTORY
-
-
