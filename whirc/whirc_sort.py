@@ -1,5 +1,5 @@
-#Right now, this makes flats from raw data
-# Bias is subtracted first
+# Right now, this makes flats from raw data
+# Bias and dark are subracted
 # Run in the directory above Raw/, Calibs/, and Final/ 
 
 import pyfits
@@ -108,7 +108,6 @@ def whirc_sort():
         K_flat_off_locs.append("Raw/"+str(K_flat_off[line][0]))
 
     #FOR EACH J-FLAT-ON, READ IMAGE, SUBTRACT BIAS, AND ADD TO ARRAY
-    J_flat_on_median = []
     all_J_flat_on = [] 
     norm = np.median(pyfits.getdata(J_flat_on_locs[0])[500:1500,500:1500]) #median of first flat
     for element in J_flat_on_locs:
@@ -117,7 +116,6 @@ def whirc_sort():
         im_J_on = im_J_on - bias - (5.0/60.0)*dark #because flats are only 5 seconds and darks are 60 seconds
         im_J_on = im_J_on*(norm/np.median(im_J_on[500:1500,500:1500])) #normalize all flats to have same median as first flat 
         all_J_flat_on.append(im_J_on)
-        J_flat_on_median.append(float(np.median(im_J_on)))
         print np.shape(all_J_flat_on), np.median(im_J_on)
         
     #Median combine
@@ -129,16 +127,14 @@ def whirc_sort():
     print "Done with J_flat_on"
         
     #FOR EACH J-FLAT-OFF, READ IMAGE, SUBTRACT BIAS, AND ADD TO ARRAY
-    J_flat_off_median = []
     all_J_flat_off = [] 
-    norm = np.median(pyfits.getdata(J_flat_off_locs[0])[500:1500,500:1500]) #median of first flat
+    norm = np.median(pyfits.getdata(J_flat_off_locs[1])) #median of second flat (first one is weird)
     for element in J_flat_off_locs:
         im_J_off = pyfits.getdata(element)
         im_J_off = im_J_off[0:2048,0:2048]
         im_J_off = im_J_off - bias - (5.0/60.0)*dark #because flats are only 5 seconds and darks are 60 seconds
-        im_J_off = im_J_off*(norm/np.median(im_J_off[500:1500,500:1500])) #normalize all flats to have same median as first flat 
+        im_J_off = im_J_off*(norm/np.median(im_J_off)) #normalize all flats to have same median as first flat 
         all_J_flat_off.append(im_J_off)
-        J_flat_off_median.append(float(np.median(im_J_off)))
         print np.shape(all_J_flat_off), np.median(im_J_off)
     
     #Median combine
@@ -150,16 +146,14 @@ def whirc_sort():
     print "Done with J_flat_off"
     
     #FOR EACH K-FLAT-ON, READ IMAGE, SUBTRACT BIAS, AND ADD TO ARRAY
-    K_flat_on_median = []
     all_K_flat_on = [] 
-    norm = np.median(pyfits.getdata(K_flat_on_locs[0])[500:1500,500:1500]) #median of first flat
+    norm = np.median(pyfits.getdata(K_flat_on_locs[1])[500:1500,500:1500]) #median of second flat
     for element in K_flat_on_locs:
         im_K_on = pyfits.getdata(element)
         im_K_on = im_K_on[0:2048,0:2048]
         im_K_on = im_K_on - bias - (5.0/60.0)*dark #because flats are only 5 seconds and darks are 60 seconds
         im_K_on = im_K_on*(norm/np.median(im_K_on[500:1500,500:1500])) #normalize all flats to have same median as first flat 
         all_K_flat_on.append(im_K_on)
-        K_flat_on_median.append(float(np.median(im_K_on)))
         print np.shape(all_K_flat_on), np.median(im_K_on)
         
     #Median combine
@@ -171,16 +165,14 @@ def whirc_sort():
     print "Done with K_flat_on"
     
     #FOR EACH K-FLAT-OFF, READ IMAGE, SUBTRACT BIAS, AND ADD TO ARRAY
-    K_flat_off_median = []
     all_K_flat_off = [] 
-    norm = np.median(pyfits.getdata(K_flat_off_locs[0])[500:1500,500:1500]) #median of center region of first flat
+    norm = np.median(pyfits.getdata(K_flat_off_locs[1])) #median of second flat
     for element in K_flat_off_locs:
         im_K_off = pyfits.getdata(element)
         im_K_off = im_K_off[0:2048,0:2048]
         im_K_off = im_K_off - bias - (5.0/60.0)*dark #because flats are only 5 seconds and darks are 60 seconds
-        im_K_off = im_K_off*(norm/np.median(im_K_off[500:1500,500:1500])) #normalize all flats to have same median as first flat 
+        im_K_off = im_K_off*(norm/np.median(im_K_off)) #normalize all flats to have same median as first flat 
         all_K_flat_off.append(im_K_off)
-        K_flat_off_median.append(float(np.median(im_K_off)))
         print np.shape(all_K_flat_off), np.median(im_K_off)
     
     #Median combine
@@ -200,5 +192,4 @@ def whirc_sort():
     
     K_mas = pyfits.PrimaryHDU(K_master)
     K_mas.writeto('Calibs/K_master_flat.fits', clobber = True)
-#    plt.hist(J_flat_on_median)
         
