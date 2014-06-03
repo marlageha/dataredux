@@ -15,12 +15,11 @@ add:
 
 2. Run script to organize data.
    a) Read all headers and create fits table 'whirc_data.fits'
-   >  whirc.whirc_setup()
-   b) I then used > whirc.whirc_info() to create an easy-to-edit digital log of the  
-   observations. I then manually corrected this log; the whirc_info.dat file is the
-   most up-to-date version. Don't run whirc_info(); it will overwrite the manually 
-   corrected log with one that hasn't been corrected yet. 
-   c) Move whirc_info.dat to directory above /Raw, /Calibs, /Final.
+   >  whirc.whirc_setup() 
+   b) Move whirc_info.dat, the digital observing log, to directory 
+      above /Raw, /Calibs, /Final.
+   c) whirc_info.py is no longer needed, it was used to create a draft of the observing
+      log which was then edited and cross-checked with the data. 
   
 3. Co-add all bias frames, bias.fits is written to /Calibs
    > whirc.whirc_mkbias()
@@ -28,7 +27,15 @@ add:
 4. Co-add all dark frames, dark.fits is written to /Calibs
    > whirc.whirc_mkdark()
    
-5. Co-add all flats, subtract off_flats from on_flats, normalize. J_master_flat.fits
-   and K_master_flat.fits are written to /Calibs
+5. Co-add all flats (subtracting appropriate dark and bias), subtract off_flats from
+   on_flats, normalize. J_master_flat.fits and K_master_flat.fits are written to /Calibs
    > whirc.whirc_sort()
+
+6. From http://www.noao.edu/kpno/manuals/whirc/datared.html, download 'bpix.whirc.fits'.
+   (the bad pixel map) Move to directory above Raw, Calibs, Final. 
+   
+7. Smooth background of master flats and subtract to get rid of pupil ghost. 
+   "New_J_Flat.fits," "New_K_Flat.fits" are written to /Calibs/. (These are the best flats.)
+   > whirc.whirc_rmpupil()
+ 
 
