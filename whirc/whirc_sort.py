@@ -107,7 +107,7 @@ def whirc_sort():
     for line in range(len(K_flat_off)):
         K_flat_off_locs.append("Raw/"+str(K_flat_off[line][0]))
 
-    #FOR EACH J-FLAT-ON, READ IMAGE, SUBTRACT BIAS, AND ADD TO ARRAY
+    #FOR EACH J-FLAT-ON, READ IMAGE, SUBTRACT BIAS AND DARKS, AND ADD TO ARRAY
     all_J_flat_on = [] 
     norm = np.median(pyfits.getdata(J_flat_on_locs[0])[500:1500,500:1500]) #median of first flat
     for element in J_flat_on_locs:
