@@ -37,5 +37,10 @@ add:
 7. Smooth background of master flats and subtract to get rid of pupil ghost. 
    "New_J_Flat.fits," "New_K_Flat.fits" are written to /Calibs/. (These are the best flats.)
    > whirc.whirc_rmpupil()
+
+8. Inside Calibs, make a directory "sky." E.g. there should be a directory Calibs/sky.
+   Make a sky image for each flat, each night, each object by median combining science images.
+   > whirc.whirc_mksky(obj_id) 
+   i.e. if you want to make a sky image for 55500, > whirc.whirc_mksky(55500)
  
 
