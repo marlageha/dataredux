@@ -29,6 +29,8 @@ def whirc_setup():
     dec=[]
     exptime=[]
     rotangle = []
+    ra_offset = []
+    dec_offset = []
     e2=np.zeros(1)
 
     # READ ALL FILES IN /RAW
@@ -49,8 +51,10 @@ def whirc_setup():
                 dec.append(hdr['DEC'])
                 exptime.append(hdr['EXPTIME'])
                 rotangle.append(hdr['ROTANGLE'])
+                ra_offset.append(hdr['RAOFFST'])
+                dec_offset.append(hdr['DECOFFST'])
                 np.append(e2,hdr['EXPTIME'])
-                print hdr['OBJECT'],hdr['IMGTYPE'],hdr['EXPTIME'],hdr['ROTANGLE']
+                print hdr['OBJECT'],hdr['IMGTYPE'],hdr['EXPTIME'],hdr['ROTANGLE'], hdr['RAOFFST'],hdr['DECOFFST']
 
 
     # PARSE OBJECT NAMES
@@ -79,11 +83,13 @@ def whirc_setup():
     c5 = Column(name='ra', format='A14',array=ra)
     c6 = Column(name='dec', format='A14',array=dec)
     c7 = Column(name='exptime',format='D',array=exptime)
-    c8 = Column(name='rotangle',format='A13',array=rotangle)
+    c8 = Column(name='rotangle',format='A14',array=rotangle)
+    c9 = Column(name='raoffset',format='A14',array=ra_offset)
+    c10= Column(name='decoffset',format='A14',array=dec_offset)
 
 
 
     # WRITE TO DIRECTORY
-    whirc = pyfits.new_table([c1, c2, c3, c4, c5,c6,c7,c8])
+    whirc = pyfits.new_table([c1, c2, c3, c4, c5,c6,c7,c8,c9,c10])
     whirc.writeto('whirc_data.fits',clobber=True)
         
