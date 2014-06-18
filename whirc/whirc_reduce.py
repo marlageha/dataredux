@@ -6,6 +6,7 @@ def whirc_reduce(obj_id):
     import pyfits
     import numpy as np
     import matplotlib.pyplot as plt
+    import cosmics 
     import astropy.coordinates as coord
     import astropy.units as u
     
@@ -176,6 +177,11 @@ def whirc_reduce(obj_id):
             reduced_sci = (sci - bias - dark - skyJN1)/J_flat
             file = pyfits.PrimaryHDU(reduced_sci)
             file.writeto('Calibs/reduced/'+str(obj_id)+'_'+'JN1_'+str(line + 1)+'.fits', clobber = True)
+            array, header = cosmics.fromfits('Calibs/reduced/'+str(obj_id)+'_'+'JN1_'+str(line + 1)+'.fits')
+            c = cosmics.cosmicsimage(array)
+            c.run(maxiter = 1) # can increase up to 4 to improve precision, but takes longer
+            cosmics.tofits('Calibs/reduced/'+str(obj_id)+'_'+'JN1_cos'+str(line + 1)+'.fits', c.cleanarray, header)
+            
             
     #K_filter, Night 1
     print "reading in KN1..."    
@@ -183,10 +189,14 @@ def whirc_reduce(obj_id):
         skyKN1 = pyfits.getdata('Calibs/sky/sky_'+str(obj_id)+'K_N1.fits')
         
         for line in range(len(aobj_idKN1)):
-            sci = pyfits.getdata(Kobj_idN1_locs[line])[0:2048,0:2048]
-            reduced_sci = (sci - bias - dark - skyKN1)/K_flat
-            file = pyfits.PrimaryHDU(reduced_sci)
-            file.writeto('Calibs/reduced/'+str(obj_id)+'_'+'KN1_'+str(line + 1)+'.fits', clobber = True)
+           sci = pyfits.getdata(Kobj_idN1_locs[line])[0:2048,0:2048]
+           reduced_sci = (sci - bias - dark - skyKN1)/K_flat
+           file = pyfits.PrimaryHDU(reduced_sci)
+           file.writeto('Calibs/reduced/'+str(obj_id)+'_'+'KN1_'+str(line + 1)+'.fits', clobber = True)
+           array, header = cosmics.fromfits('Calibs/reduced/'+str(obj_id)+'_'+'KN1_'+str(line + 1)+'.fits')
+           c = cosmics.cosmicsimage(array)
+           c.run(maxiter = 1) # can increase up to 4 to improve precision, but takes longer
+           cosmics.tofits('Calibs/reduced/'+str(obj_id)+'_'+'KN1_cos'+str(line + 1)+'.fits', c.cleanarray, header)
         
     #J_filter, Night 2
     print "reading in JN2..."    
@@ -198,6 +208,10 @@ def whirc_reduce(obj_id):
             reduced_sci = (sci - bias - dark - skyJN2)/J_flat
             file = pyfits.PrimaryHDU(reduced_sci)
             file.writeto('Calibs/reduced/'+str(obj_id)+'_'+'JN2_'+str(line + 1)+'.fits', clobber = True)
+            array, header = cosmics.fromfits('Calibs/reduced/'+str(obj_id)+'_'+'JN2_'+str(line + 1)+'.fits')
+            c = cosmics.cosmicsimage(array)
+            c.run(maxiter = 1) # can increase up to 4 to improve precision, but takes longer
+            cosmics.tofits('Calibs/reduced/'+str(obj_id)+'_'+'JN2_cos'+str(line + 1)+'.fits', c.cleanarray, header)
 
     #K_filter, Night 2
     print "reading in KN2..."
@@ -209,17 +223,25 @@ def whirc_reduce(obj_id):
             reduced_sci = (sci - bias - dark - skyKN2)/K_flat
             file = pyfits.PrimaryHDU(reduced_sci)
             file.writeto('Calibs/reduced/'+str(obj_id)+'_'+'KN2_'+str(line + 1)+'.fits', clobber = True)
-        
+            array, header = cosmics.fromfits('Calibs/reduced/'+str(obj_id)+'_'+'KN2_'+str(line + 1)+'.fits')
+            c = cosmics.cosmicsimage(array)
+            c.run(maxiter = 1) # can increase up to 4 to improve precision, but takes longer
+            cosmics.tofits('Calibs/reduced/'+str(obj_id)+'_'+'KN2_cos'+str(line + 1)+'.fits', c.cleanarray, header)
+            
     #J_filter, Night 3
     print "reading in JN3..."  
     if len(aobj_idJN3) > 0:
         skyJN3 = pyfits.getdata('Calibs/sky/sky_'+str(obj_id)+'J_N3.fits')
         
         for line in range(len(aobj_idJN3)):
-            sci = pyfits.getdata(Jobj_idN3_locs[line])[0:2048,0:2048]
-            reduced_sci = (sci - bias - dark - skyJN3)/J_flat
-            file = pyfits.PrimaryHDU(reduced_sci)
-            file.writeto('Calibs/reduced/'+str(obj_id)+'_'+'JN3_'+str(line + 1)+'.fits', clobber = True)
+           sci = pyfits.getdata(Jobj_idN3_locs[line])[0:2048,0:2048]
+           reduced_sci = (sci - bias - dark - skyJN3)/J_flat
+           file = pyfits.PrimaryHDU(reduced_sci)
+           file.writeto('Calibs/reduced/'+str(obj_id)+'_'+'JN3_'+str(line + 1)+'.fits', clobber = True)
+           array, header = cosmics.fromfits('Calibs/reduced/'+str(obj_id)+'_'+'JN3_'+str(line + 1)+'.fits')
+           c = cosmics.cosmicsimage(array)
+           c.run(maxiter = 1) # can increase up to 4 to improve precision, but takes longer
+           cosmics.tofits('Calibs/reduced/'+str(obj_id)+'_'+'JN3_cos'+str(line + 1)+'.fits', c.cleanarray, header)
         
     if len(aobj_idKN3) > 0:
         skyKN3 = pyfits.getdata('Calibs/sky/sky_'+str(obj_id)+'K_N3.fits')
@@ -228,4 +250,8 @@ def whirc_reduce(obj_id):
             sci = pyfits.getdata(Kobj_idN3_locs[line])[0:2048,0:2048]
             reduced_sci = (sci - bias - dark - skyKN3)/K_flat
             file = pyfits.PrimaryHDU(reduced_sci)
-            file.writeto('Calibs/reduced/'+str(obj_id)+'_KN3_'+str(line + 1)+'.fits', clobber = True)
+            file.writeto('Calibs/reduced/'+str(obj_id)+'_'+'KN3_'+str(line + 1)+'.fits', clobber = True)
+            array, header = cosmics.fromfits('Calibs/reduced/'+str(obj_id)+'_'+'KN3_'+str(line + 1)+'.fits')
+            c = cosmics.cosmicsimage(array)
+            c.run(maxiter = 1) # can increase up to 4 to improve precision, but takes longer
+            cosmics.tofits('Calibs/reduced/'+str(obj_id)+'_'+'KN3_cos'+str(line + 1)+'.fits', c.cleanarray, header)
