@@ -35,7 +35,8 @@ add:
    (the bad pixel map) Move to directory above Raw, Calibs, Final. 
    
 7. Smooth background of master flats and subtract to get rid of pupil ghost. 
-   "New_J_Flat.fits," "New_K_Flat.fits" are written to /Calibs/. (These are the best flats.)
+   "New_J_Flat.fits," "New_K_Flat.fits" are written to /Calibs/. (These are the best 
+   flats.)
    > whirc.whirc_rmpupil()
 
 8. Inside Calibs, make a directory "sky." E.g. there should be a directory Calibs/sky.
@@ -44,12 +45,19 @@ add:
    > whirc.whirc_mksky(obj_id) 
    i.e. if you want to make a sky image for 55500, > whirc.whirc_mksky(55500)
 
-9. Inside Calibs, make a directory “reduced.” For a particular obj_id, apply bias, dark, 
-   sky subtraction, and flat. Write reduced images to Calibs/reduced.
+9. Inside Calibs, make a directory “reduced.” 
+   From http://www.astro.yale.edu/dokkum/lacosmic/, download and install the “cosmics.py”  
+   module. Move cosmics.py to dataredux/whirc
+   For a particular obj_id, apply bias, dark, sky subtraction, and flat. Make copy of 
+   images w/o cosmic rays (for alignment). Write reducedimages to Calibs/reduced.
    > whirc.whirc_reduce(obj_id)
 
-10. Inside Calibs, make a directory “shifted.” For a particular obj_id, align images and 
-    median combine. Write aligned images and median combined image to Calibs/shifted.
+10. Inside Calibs, make a directory “starfields” For a particular obj_id, find brightest 
+    stars in all exposures and write starfield to a pickle file.   
     > whirc.whirc_align(obj_id)
+
+11. Inside Calibs, make a directory “shifted.” Use starfields from last step to align 
+    images for each object, night, and filter and median combine. Write to Calibs/shifted.
+    > whirc.whirc_shiftcalc(obj_id)
  
 
