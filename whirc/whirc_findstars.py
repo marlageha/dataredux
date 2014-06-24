@@ -172,8 +172,40 @@ def whirc_findstars(obj_id):
     for line in range(len(aobj_idKN3)):
         Kobj_idN3_locs.append('Calibs/reduced/'+str(obj_id)+'_'+'KN3_cos'+str(line + 1)+'.fits')
         
-    #READ IN SCIENCE EXPOSURES
+    #TELL FINDSTARS HOW MANY STARS TO LOOK FOR:
+    if obj_id == 55500:
+        num_star = 13
+    elif obj_id == 77610:
+        num_star = 6
+    elif obj_id == 54655:
+        num_star = 10
+    elif obj_id == 119887:
+        num_star = 10
+    elif obj_id == 67565:
+        num_star = 11
+    elif obj_id == 36363:
+        num_star = 10
+    elif obj_id == 120659:
+        num_star = 11
+    elif obj_id == 37836: #But this is useless anyway...
+        num_star = 7
+    elif obj_id == 51306:
+        num_star = 8 
+    elif obj_id == 122277:
+        num_star = 8
+    elif obj_id == 20700:
+        num_star = 16
+    elif obj_id == 57476:
+        num_star = 6
+    elif obj_id == 38329:
+        num_star = 7
+    elif obj_id == 121130:
+        num_star = 13
+    else:
+        num_star = 12
     
+    
+        
     #J_filter, Night 1
     if len(aobj_idJN1) > 0: 
         print "processing J_N1..."
@@ -245,7 +277,7 @@ def whirc_findstars(obj_id):
                     #if 50 < cens[line][0][0] < 2000 and 50 < cens[line][0][1] < 2000:
                     good_cens.append(cens[line])
                 
-                cens = np.array(good_cens)[0:15] #remove fainter stars
+                cens = np.array(good_cens)[0:num_star] #remove fainter stars
                     
                 cens = cens[:,0]
                 print cens
@@ -302,7 +334,7 @@ def whirc_findstars(obj_id):
                     #if 320 < cens[line][0][0] < 1740 and 320 < cens[line][0][1] < 1740:
                     good_cens.append(cens[line])
                 
-                cens = np.array(good_cens)[0:15] #remove fainter stars
+                cens = np.array(good_cens)[0:num_star] #remove fainter stars
                     
                 cens = cens[:,0]
                 print cens
@@ -650,7 +682,7 @@ def whirc_findstars(obj_id):
             for line in range(len(cens)):
                 if 100 < cens[line][0][0] < 1950 and 100 < cens[line][0][1] < 1950:
                     good_cens.append(cens[line])
-            cens = np.array(good_cens)[0:15] #remove fainter stars
+            cens = np.array(good_cens)[0:num_star] #remove fainter stars
             cens = cens[:,0]
             print "stars", cens
             cens = cens.tolist()
@@ -708,9 +740,9 @@ def whirc_findstars(obj_id):
                 if 100 < cens[line][0][0] < 1950 and 100 < cens[line][0][1] < 1950:
                     good_cens.append(cens[line])
                     
-            cens = np.array(good_cens)[0:15] #remove fainter stars
+            cens = np.array(good_cens)[0:num_star] #remove fainter stars
             cens = cens[:,0]
-            print cens
+            print 'stars: ',cens
             cens = cens.tolist()
 
             
@@ -768,9 +800,9 @@ def whirc_findstars(obj_id):
                 if 100 < cens[line][0][0] < 1950 and 100 < cens[line][0][1] < 1950:
                     good_cens.append(cens[line])
                     
-            cens = np.array(good_cens)[0:15] #remove fainter stars
+            cens = np.array(good_cens)[0:num_star] #remove fainter stars
             cens = cens[:,0]
-            print cens
+            print 'stars: ', cens
             cens = cens.tolist()
 
             star_coords.append(cens)
@@ -826,8 +858,9 @@ def whirc_findstars(obj_id):
                 if 100 < cens[line][0][0] < 1950 and 100 < cens[line][0][1] < 1950:
                     good_cens.append(cens[line])
                     
-            cens = np.array(good_cens)[0:15] #remove fainter stars
+            cens = np.array(good_cens)[0:num_star] #remove fainter stars
             cens = cens[:,0]
+            print 'stars: ', cens
             cens = cens.tolist()
 
             
@@ -844,7 +877,7 @@ def whirc_findstars(obj_id):
         
     #K_filter, Night 3
     if len(aobj_idKN3) > 0: 
-        print "processing J_N3..."
+        print "processing K_N3..."
     
         tophat = Tophat2DKernel(5) #Radius can be changed to increase sharpess 
     
@@ -865,7 +898,7 @@ def whirc_findstars(obj_id):
             cens = []
             badcens = []
             for line in range(len(centers)):
-                if centers[line][0] > 2047 or centers[line][1] > 2047:
+                if centers[line][0] > 2047 or centers[line][0] < 0 or centers[line][1] <0 or centers[line][1] > 2047:
                     badcens.append(line)
             
             if len(badcens) > 0:
@@ -885,8 +918,9 @@ def whirc_findstars(obj_id):
                 if 100 < cens[line][0][0] < 1950 and 100 < cens[line][0][1] < 1950:
                     good_cens.append(cens[line])
                     
-            cens = np.array(good_cens)[0:15] #remove fainter stars
+            cens = np.array(good_cens)[0:num_star] #remove fainter stars
             cens = cens[:,0]
+            print 'stars: ', cens
             cens = cens.tolist()
 
             
