@@ -154,118 +154,120 @@ def whirc_mksky(obj_id):
     print "reading in J_N1..."
     allobj_idJN1 = []
     if len(Jobj_idN1_locs) > 0:
-        norm = np.median(pyfits.getdata(Jobj_idN1_locs[0])[500:1500,500:1500]) #median of first flat
+        #norm = np.median(pyfits.getdata(Jobj_idN1_locs[0])[500:1500,500:1500]) #median of first flat
         
-    for element in Jobj_idN1_locs:
-        imobj_idj = pyfits.getdata(element)
-        imobj_idj = imobj_idj[0:2048,0:2048]
-        imobj_idj = imobj_idj - bias - dark #because 60 sec exposure
-        imobj_idj = imobj_idj*(norm/np.median(imobj_idj[500:1500,500:1500])) #normalize all flats to have same median as first flat 
-        allobj_idJN1.append(imobj_idj)
-        print np.shape(allobj_idJN1), np.median(imobj_idj)
+        for element in Jobj_idN1_locs:
+            imobj_idj = pyfits.getdata(element)
+            imobj_idj = imobj_idj[0:2048,0:2048]
+            imobj_idj = imobj_idj - bias - dark #because 60 sec exposure
+            #imobj_idj = imobj_idj*(norm/np.median(imobj_idj[500:1500,500:1500])) #normalize all flats to have same median as first flat 
+            allobj_idJN1.append(imobj_idj)
+            print np.shape(allobj_idJN1), np.median(imobj_idj)
+    
+        
+        #MEDIAN COMBINE
+        #WRITE TO FILE
+    
+        print "median combining J_N1..."
+        Jobj_idN1 = np.median(allobj_idJN1, axis = 0)
+        j_sky1 = pyfits.PrimaryHDU(Jobj_idN1)
+        j_sky1.writeto('Calibs/sky/sky_'+str(obj_id)+'J_N1.fits', clobber = True)
+    
         
     #FOR EACH K_FILE_N1, READ IMAGE, SUBTRACT BIAS AND DARKS, AND ADD TO ARRAY
     print "reading in K_N1..."
     allobj_idKN1 = []
     if len(Kobj_idN1_locs) > 0:
-        norm = np.median(pyfits.getdata(Kobj_idN1_locs[0])[500:1500,500:1500]) #median of first flat
+        #norm = np.median(pyfits.getdata(Kobj_idN1_locs[0])[500:1500,500:1500]) #median of first flat
         
-    for element in Kobj_idN1_locs:
-        imobj_idk = pyfits.getdata(element)
-        imobj_idk = imobj_idk[0:2048,0:2048]
-        imobj_idk = imobj_idk - bias - dark #because 60 sec exposure
-        imobj_idk = imobj_idk*(norm/np.median(imobj_idk[500:1500,500:1500])) #normalize all flats to have same median as first flat 
-        allobj_idKN1.append(imobj_idk)
-        print np.shape(allobj_idKN1), np.median(imobj_idk)
+        for element in Kobj_idN1_locs:
+            imobj_idk = pyfits.getdata(element)
+            imobj_idk = imobj_idk[0:2048,0:2048]
+            imobj_idk = imobj_idk - bias - dark #because 60 sec exposure
+            #imobj_idk = imobj_idk*(norm/np.median(imobj_idk[500:1500,500:1500])) #normalize all flats to have same median as first flat 
+            allobj_idKN1.append(imobj_idk)
+            print np.shape(allobj_idKN1), np.median(imobj_idk)
+            
+        print "median combining K_N1..."
+        Kobj_idN1 = np.median(allobj_idKN1, axis = 0)
+        k_sky1 = pyfits.PrimaryHDU(Kobj_idN1)
+        k_sky1.writeto('Calibs/sky/sky_'+str(obj_id)+'K_N1.fits', clobber = True)
+            
+
         
     #FOR EACH J_FILE_N2, READ IMAGE, SUBTRACT BIAS AND DARKS, AND ADD TO ARRAY
     print "reading in J_N2..."
     allobj_idJN2 = []
     if len(Jobj_idN2_locs) > 0:
-        norm = np.median(pyfits.getdata(Jobj_idN2_locs[0])[500:1500,500:1500]) #median of first flat
+        #norm = np.median(pyfits.getdata(Jobj_idN2_locs[0])[500:1500,500:1500]) #median of first flat
         
-    for element in Jobj_idN2_locs:
-        imobj_idj = pyfits.getdata(element)
-        imobj_idj = imobj_idj[0:2048,0:2048]
-        imobj_idj = imobj_idj - bias - dark #because 60 sec exposure
-        imobj_idj = imobj_idj*(norm/np.median(imobj_idj[500:1500,500:1500])) #normalize all flats to have same median as first flat 
-        allobj_idJN2.append(imobj_idj)
-        print np.shape(allobj_idJN2), np.median(imobj_idj)
-        
-    #FOR EACH K_FILE_N2, READ IMAGE, SUBTRACT BIAS AND DARKS, AND ADD TO ARRAY
-    print "reading in K_N2..."
-    allobj_idKN2 = []
-    if len(Kobj_idN2_locs) > 0:
-        norm = np.median(pyfits.getdata(Kobj_idN2_locs[0])[500:1500,500:1500]) #median of first flat
-        
-    for element in Kobj_idN2_locs:
-        imobj_idk = pyfits.getdata(element)
-        imobj_idk = imobj_idk[0:2048,0:2048]
-        imobj_idk = imobj_idk - bias - dark #because 60 sec exposure
-        imobj_idk = imobj_idk*(norm/np.median(imobj_idk[500:1500,500:1500])) #normalize all flats to have same median as first flat 
-        allobj_idKN2.append(imobj_idk)
-        print np.shape(allobj_idKN2), np.median(imobj_idk)
-        
-    #FOR EACH J_FILE_N3, READ IMAGE, SUBTRACT BIAS AND DARKS, AND ADD TO ARRAY
-    print "reading in J_N3..."
-    allobj_idJN3 = []
-    if len(Jobj_idN3_locs) > 0:
-        norm = np.median(pyfits.getdata(Jobj_idN3_locs[0])[500:1500,500:1500]) #median of first flat
-        
-    for element in Jobj_idN3_locs:
-        imobj_idj = pyfits.getdata(element)
-        imobj_idj = imobj_idj[0:2048,0:2048]
-        imobj_idj = imobj_idj - bias - dark #because 60 sec exposure
-        imobj_idj = imobj_idj*(norm/np.median(imobj_idj[500:1500,500:1500])) #normalize all flats to have same median as first flat 
-        allobj_idJN3.append(imobj_idj)
-        print np.shape(allobj_idJN3), np.median(imobj_idj)
-        
-    #FOR EACH K_FILE_N3, READ IMAGE, SUBTRACT BIAS AND DARKS, AND ADD TO ARRAY
-    print "reading in K_N3..."
-    allobj_idKN3 = []
-    if len(Kobj_idN3_locs) > 0:
-        norm = np.median(pyfits.getdata(Kobj_idN3_locs[0])[500:1500,500:1500]) #median of first flat
-    for element in Kobj_idN3_locs:
-        imobj_idk = pyfits.getdata(element)
-        imobj_idk = imobj_idk[0:2048,0:2048]
-        imobj_idk = imobj_idk - bias - dark #because 60 sec exposure
-        imobj_idk = imobj_idk*(norm/np.median(imobj_idk[500:1500,500:1500])) #normalize all flats to have same median as first flat 
-        allobj_idKN3.append(imobj_idk)
-        print np.shape(allobj_idKN3), np.median(imobj_idk)
-        
-    #MEDIAN COMBINE
-    #WRITE TO FILE
-    if len(allobj_idJN1) > 0:
-        print "median combining J_N1..."
-        Jobj_idN1 = np.median(allobj_idJN1, axis = 0)
-        j_sky1 = pyfits.PrimaryHDU(Jobj_idN1)
-        j_sky1.writeto('Calibs/sky/sky_'+str(obj_id)+'J_N1.fits', clobber = True)
-        
-    if len(allobj_idKN1) > 0:
-        print "median combining K_N1..."
-        Kobj_idN1 = np.median(allobj_idKN1, axis = 0)
-        k_sky1 = pyfits.PrimaryHDU(Kobj_idN1)
-        k_sky1.writeto('Calibs/sky/sky_'+str(obj_id)+'K_N1.fits', clobber = True)
-        
-    if len(allobj_idJN2) > 0:
+        for element in Jobj_idN2_locs:
+            imobj_idj = pyfits.getdata(element)
+            imobj_idj = imobj_idj[0:2048,0:2048]
+            imobj_idj = imobj_idj - bias - dark #because 60 sec exposure
+            #imobj_idj = imobj_idj*(norm/np.median(imobj_idj[500:1500,500:1500])) #normalize all flats to have same median as first flat 
+            allobj_idJN2.append(imobj_idj)
+            print np.shape(allobj_idJN2), np.median(imobj_idj)
+            
         print "median combining J_N2..."
         Jobj_idN2 = np.median(allobj_idJN2, axis = 0)
         j_sky2 = pyfits.PrimaryHDU(Jobj_idN2)
         j_sky2.writeto('Calibs/sky/sky_'+str(obj_id)+'J_N2.fits', clobber = True)
         
-    if len(allobj_idKN2) > 0:
+    #FOR EACH K_FILE_N2, READ IMAGE, SUBTRACT BIAS AND DARKS, AND ADD TO ARRAY
+    print "reading in K_N2..."
+    allobj_idKN2 = []
+    if len(Kobj_idN2_locs) > 0:
+        #norm = np.median(pyfits.getdata(Kobj_idN2_locs[0])[500:1500,500:1500]) #median of first flat
+        
+        for element in Kobj_idN2_locs:
+            imobj_idk = pyfits.getdata(element)
+            imobj_idk = imobj_idk[0:2048,0:2048]
+            imobj_idk = imobj_idk - bias - dark #because 60 sec exposure
+            #imobj_idk = imobj_idk*(norm/np.median(imobj_idk[500:1500,500:1500])) #normalize all flats to have same median as first flat 
+            allobj_idKN2.append(imobj_idk)
+            print np.shape(allobj_idKN2), np.median(imobj_idk)
+            
         print "median combining K_N2..."
         Kobj_idN2 = np.median(allobj_idKN2, axis = 0)
         k_sky2 = pyfits.PrimaryHDU(Kobj_idN2)
         k_sky2.writeto('Calibs/sky/sky_'+str(obj_id)+'K_N2.fits', clobber = True)
         
-    if len(allobj_idJN3) > 0:
+    #FOR EACH J_FILE_N3, READ IMAGE, SUBTRACT BIAS AND DARKS, AND ADD TO ARRAY
+    print "reading in J_N3..."
+    allobj_idJN3 = []
+    if len(Jobj_idN3_locs) > 0:
+        #norm = np.median(pyfits.getdata(Jobj_idN3_locs[0])[500:1500,500:1500]) #median of first flat
+        
+        for element in Jobj_idN3_locs:
+            imobj_idj = pyfits.getdata(element)
+            imobj_idj = imobj_idj[0:2048,0:2048]
+            imobj_idj = imobj_idj - bias - dark #because 60 sec exposure
+            #imobj_idj = imobj_idj*(norm/np.median(imobj_idj[500:1500,500:1500])) #normalize all flats to have same median as first flat 
+            allobj_idJN3.append(imobj_idj)
+            print np.shape(allobj_idJN3), np.median(imobj_idj)
+        
         print "median combining J_N3..."
         Jobj_idN3 = np.median(allobj_idJN3, axis = 0)
         j_sky3 = pyfits.PrimaryHDU(Jobj_idN3)
         j_sky3.writeto('Calibs/sky/sky_'+str(obj_id)+'J_N3.fits', clobber = True)
         
-    if len(allobj_idKN3) > 0:
+        
+    #FOR EACH K_FILE_N3, READ IMAGE, SUBTRACT BIAS AND DARKS, AND ADD TO ARRAY
+    print "reading in K_N3..."
+    allobj_idKN3 = []
+    if len(Kobj_idN3_locs) > 0:
+        #norm = np.median(pyfits.getdata(Kobj_idN3_locs[0])[500:1500,500:1500]) #median of first flat
+
+
+        for element in Kobj_idN3_locs:
+            imobj_idk = pyfits.getdata(element)
+            imobj_idk = imobj_idk[0:2048,0:2048]
+            imobj_idk = imobj_idk - bias - dark #because 60 sec exposure
+            #imobj_idk = imobj_idk*(norm/np.median(imobj_idk[500:1500,500:1500])) #normalize all flats to have same median as first flat 
+            allobj_idKN3.append(imobj_idk)
+            print np.shape(allobj_idKN3), np.median(imobj_idk)
+        
         print "median combining K_N3..."
         Kobj_idN3 = np.median(allobj_idKN3, axis = 0)
         k_sky3 = pyfits.PrimaryHDU(Kobj_idN3)
