@@ -59,5 +59,20 @@ add:
 11. Inside Calibs, make a directory “shifted.” Use starfields from last step to align 
     images for each object, night, and filter and median combine. Write to Calibs/shifted.
     > whirc.whirc_shiftcalc(obj_id)
+
+12. Find master science images and coadd them (including shifts) for objects with more 
+    than one night’s worth of data. Write finals J and K images to /Final/.
+    > whirc.whirc_combine(obj_id)
+
+13. Get GALFIT from http://users.obs.carnegiescience.edu/peng/work/galfit/galfit.html. 
+    Install and set path to directory where GalFit is. Following the template in
+    EXAMPLE.INPUT, make an input file for each galaxy. In Calibs, make directories 
+    Calibs/galfits and Calibs/inputs; put input files in /inputs. Guess fittable 
+    parameters and run GALFIT. Fit Sersic profiles and sky. 
+
+    galfit obj_id_inputj 
+
+14. Extract plots and images from Galfit output. In Calibs, create directory Calibs/pics. 
+    > whirc.whirc_draw(obj_id)
  
 
