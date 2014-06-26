@@ -512,7 +512,7 @@ def whirc_shiftcalc(obj_id):
         for line in range(len(aobj_idKN1)):
             sci = pyfits.getdata(Kobj_idN1_locs[line])
             shifted = interp.shift(sci, xy_shifts_KN1[line] ,order = 0)
-            shifted = shifted - np.median(shifted)
+            #shifted = shifted - np.median(shifted)
             shifteds.append(shifted)
         combined = sum(shifteds)
         median = np.median(shifteds, axis = 0)
@@ -679,7 +679,7 @@ def whirc_shiftcalc(obj_id):
         for line in range(len(aobj_idJN2)):
             sci = pyfits.getdata(Jobj_idN2_locs[line])
             shifted = interp.shift(sci, xy_shifts_JN2[line] ,order = 0)
-            shifted = shifted - np.median(shifted)
+            #shifted = shifted - np.median(shifted)
             shifteds.append(shifted)
         combined = np.mean(shifteds, axis =0) #trying instead of sum
         median = np.median(shifteds, axis = 0)
@@ -845,7 +845,7 @@ def whirc_shiftcalc(obj_id):
         for line in range(len(aobj_idKN2)):
             sci = pyfits.getdata(Kobj_idN2_locs[line])
             shifted = interp.shift(sci, xy_shifts_KN2[line] ,order = 0)
-            shifted = shifted - np.median(shifted)
+            #shifted = shifted - np.median(shifted)
             shifteds.append(shifted)
         combined = sum(shifteds)
         median = np.median(shifteds, axis = 0)
@@ -1011,7 +1011,7 @@ def whirc_shiftcalc(obj_id):
         for line in range(len(aobj_idJN3)):
             sci = pyfits.getdata(Jobj_idN3_locs[line])
             shifted = interp.shift(sci, xy_shifts_JN3[line] ,order = 0)
-            shifted = shifted - np.median(shifted)
+            #shifted = shifted - np.median(shifted)
             shifteds.append(shifted)
         combined = np.mean(shifteds, axis =0) #trying instead of sum
         median = np.median(shifteds, axis = 0)
@@ -1177,7 +1177,7 @@ def whirc_shiftcalc(obj_id):
         for line in range(len(aobj_idKN3)):
             sci = pyfits.getdata(Kobj_idN3_locs[line])
             shifted = interp.shift(sci, xy_shifts_KN3[line] ,order = 0)
-            shifted = shifted - np.median(shifted)
+            #shifted = shifted - np.median(shifted)
             shifteds.append(shifted)
         combined = sum(shifteds)
         median = np.median(shifteds, axis = 0)
