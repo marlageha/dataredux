@@ -12,5 +12,6 @@ from whirc_align import whirc_align
 from whirc_findstars import whirc_findstars 
 from whirc_shiftcalc import whirc_shiftcalc 
 from whirc_draw import whirc_draw
-__all__ = ['whirc_setup','whirc_mkbias','whirc_mkflat','whirc_info','whirc_sort','whirc_mkdark','whirc_rmpupil','whirc_55500s','whirc_mksky','whirc_reduce','whirc_align','whirc_findstars','whirc_shiftcalc','whirc_draw']
+from whirc_combine import whirc_combine
+__all__ = ['whirc_setup','whirc_mkbias','whirc_mkflat','whirc_info','whirc_sort','whirc_mkdark','whirc_rmpupil','whirc_55500s','whirc_mksky','whirc_reduce','whirc_align','whirc_findstars','whirc_shiftcalc','whirc_draw','whirc_combine']
 
