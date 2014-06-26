@@ -642,6 +642,9 @@ def whirc_findstars(obj_id):
     #K_filter, Night 1
     if len(aobj_idKN1) > 0:
         print "processing K_N1..."
+        
+        if obj_id == 35979:
+            num_star = 5
     
         tophat = Tophat2DKernel(5) #Radius can be changed to increase sharpess 
     
@@ -760,6 +763,13 @@ def whirc_findstars(obj_id):
     #K_filter, Night 2
     if len(aobj_idKN2) > 0:
         print "processing K_N2..."
+        
+        if obj_id == 55500:
+            num_star = 7
+        if obj_id == 35979:
+            num_star = 5
+        if obj_id == 77610:
+            num_star = 4
     
         tophat = Tophat2DKernel(5) #Radius can be changed to increase sharpess 
     
