@@ -72,7 +72,11 @@ add:
 
     galfit obj_id_inputj 
 
-14. Extract plots and images from Galfit output. In Calibs, create directory Calibs/pics. 
+14. Extract plots and images from GalFit output. In Calibs, create directory Calibs/pics. 
     > whirc.whirc_draw(obj_id)
+
+15. Plot some stuff. To view in context with the NSA catalog, download the NSA catalog to 
+    Downloads/ from http://www.nsatlas.org/data. Then run
+    > whirc.whirc_hist()
  
 

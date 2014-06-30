@@ -43,7 +43,7 @@ def whirc_draw(obj_id):
 
         plt.subplots_adjust(wspace=0, hspace=0., top=0.99, bottom=0.01, left=0.05, right=0.99)
         plt.savefig('Calibs/pics/'+str(obj_id)+'_J.png', clobber = True)
-        
+        '''
         #INTENSITY PLOT
         def Sersic(r):
             return brightness*np.exp(-bn*((r/r_e)**(1/ind)-1))
@@ -131,15 +131,15 @@ def whirc_draw(obj_id):
             plt.xlabel('Radius (pix)')
             plt.ylabel('Intensity')
             plt.text(0.7, 0.9,'{$n$ = '+str(ind)+', $R_{e} =$ '+str(r_e)+'}', ha='center', va='center', transform=ax.transAxes, color = 'blue')
-            '''plt.semilogy(xr, Sersic2(xr),'r', label = '2nd component')
+            plt.semilogy(xr, Sersic2(xr),'r', label = '2nd component')
             plt.semilogy(xr, Sersic(xr) + Sersic2(xr),'k', label = 'total')
             plt.text(0.7, 0.8,'{$n$ = '+str(ind2)+', $R_{e} =$ '+str(r_e2)+'}', ha='center', va='center', transform=ax.transAxes, color = 'red')
-            ax.legend(loc = 3)'''
+            ax.legend(loc = 3)
         
         
      
         
-        plt.savefig('Calibs/pics/'+str(obj_id)+'_J_plot.png', clobber = True)
+        plt.savefig('Calibs/pics/'+str(obj_id)+'_J_plot.png', clobber = True) '''
         
         
     except IOError:
@@ -178,7 +178,7 @@ def whirc_draw(obj_id):
 
         plt.subplots_adjust(wspace=0, hspace=0., top=0.99, bottom=0.01, left=0.05, right=0.99)
         plt.savefig('Calibs/pics/'+str(obj_id)+'_K.png', clobber = True)
-        
+        '''
         #INTENSITY PLOT
         def Sersic(r):
             return brightness*np.exp(-bn*((r/r_e)**(1/ind)-1))
@@ -229,12 +229,47 @@ def whirc_draw(obj_id):
             print 'just one component...'
         
         plt.savefig('Calibs/pics/'+str(obj_id)+'_K_plot.png', clobber = True)
-        
+        '''
         
     except IOError:
         print "no K File..."
         
+        
+    #KN1
+    try: 
+        img = pyfits.open('Calibs/galfits/'+str(obj_id)+'_r_block.fits')
+        
+        galaxy = img[1].data
+        fit = img[2].data
+        resid = img[3].data
+        
+        width = np.shape(galaxy)[0]
+        height = np.shape(galaxy)[1]
 
+        lima = 0.98*np.max(galaxy[0.25*width : 0.75*width, 0.25*height : 0.75*height])
+        limb = 0.98*np.max(resid[0.25*width : 0.75*width, 0.25*height : 0.75*height])
+
+        plt.figure()
+
+        plt.subplot(131)
+        plt.imshow(galaxy, cmap=plt.cm.gray, vmin=0, vmax=lima)
+        plt.axis('off')
+
+        plt.subplot(132)
+        plt.imshow(fit, cmap=plt.cm.gray)
+        plt.title(str(obj_id) +' SSDS r-band')
+        plt.axis('off')
+
+        plt.subplot(133)
+        plt.imshow(resid, cmap=plt.cm.gray, vmin=0, vmax=limb)
+        plt.axis('off')
+    
+
+        plt.subplots_adjust(wspace=0, hspace=0., top=0.99, bottom=0.01, left=0.05, right=0.99)
+        plt.savefig('Calibs/pics/'+str(obj_id)+'_r.png', clobber = True)
+    
+    except IOError:
+        print 'no SDSS file'
     
     
         
