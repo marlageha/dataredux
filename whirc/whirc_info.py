@@ -33,5 +33,6 @@ def whirc_info():
     
     file = open('whirc_info.dat','w')
     for line in range(len(filename)):
-        file.write(" ".join([str(filename[line]), str(dateobs[line]), str(objname[line]), str(imgtype[line]),str(ra[line]),str(dec[line]),str(exptime[line]),"yes",'\n']))
+        file.write(" ".join([str(filename[line]), str(dateobs[line]), str(objname[line]), 
+        str(imgtype[line]),str(ra[line]),str(dec[line]),str(exptime[line]),"yes",'\n']))
     file.close()

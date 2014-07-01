@@ -78,5 +78,9 @@ add:
 15. Plot some stuff. To view in context with the NSA catalog, download the NSA catalog to 
     Downloads/ from http://www.nsatlas.org/data. Then run
     > whirc.whirc_hist()
+
+16. Plot this dataset in context of Geha 2012. Download NSA catalog for M < 1e10 M_sun
+    from https://www.dropbox.com/s/b1kqrucrrew8num/geha2012.fits.gz?n=229870315.Then run
+    > whirc.whirc_plt()
  
 
