@@ -20,7 +20,7 @@ def whirc_hist():
     for line in range(len(files)):
         if "J" in files[line]:
             Jfiles.append('Calibs/galfits/'+files[line])
-    
+
     Kfiles = []    
     for line in range(len(files)):
         if "K" in files[line]:
@@ -30,7 +30,7 @@ def whirc_hist():
     for line in range(len(files)):
         if "r" in files[line]:
             Rfiles.append('Calibs/galfits/'+files[line])
-
+            
     #GET DATA FROM MODEL HEADERS (obj_id_J_block.fits[2])
     Jmag = []
     Jre = []
@@ -84,8 +84,9 @@ def whirc_hist():
     #Pixel scale for WHIRC and SDSS 
     Jre_arcsec = Jrre*0.1
     Kre_arcsec = Krre*0.1
-    Rre_arcsec = Rrre*0.396127
-
+    Rre_arcsec = Rrre*0.4 
+    
+   
     '''    
     #PLOT SOME STUFF. USE AS MUCH AS YOU WANT
     
@@ -159,10 +160,11 @@ def whirc_hist():
     mass_light = [mass_light[i][6] for i in range(len(mass_light))]
     Z = table['Z']
     mass = table['MASS'] #from K-correct
+    nsa_ba = table['SERSIC_BA']
 
-    obj_ids = [55500, 35979, 119887, 54655, 77610, 67565, 120659, 36363,
-               38329, 51306, 122277, 20700, 57467, 121130]
-
+    obj_ids = [119887, 120659, 121130, 122277, 20700, 35979, 36363, 38329,
+               51306, 54655, 55500, 57467, 67565, 77610]
+               
     locs = []
     for line in range(len(obj_ids)):
         locs.append(int(np.where(NSAID == obj_ids[line])[0]))
@@ -172,8 +174,11 @@ def whirc_hist():
     m_to_l = [mass_light[line] for line in locs]
     redshift =  [Z[line] for line in locs]
     stellar_mass = [mass[line] for line in locs]
-    
-    
+    nsa_rar = [nsa_ba[line] for line in locs]
+
+    for line in range(len(nsa_rar)):
+        print nsa_rar[line]
+    '''
     #PLOT SOME STUFF (JUST FROM GALITS, NOT FROM NSA CATALOG RIGHT NOW)
     f = plt.figure()
     ax = f.add_subplot(111)
@@ -198,3 +203,6 @@ def whirc_hist():
     plt.title('SDSS / WHRIC comparison')
     ax.legend(loc = 4, fontsize = 11)
     plt.savefig('Calibs/pics/mag_fit.png')
+    '''
+    
+    
