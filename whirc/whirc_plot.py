@@ -4,11 +4,12 @@ from __future__ import division
 import pyfits
 import matplotlib.pyplot as plt
 import numpy as np
+import pdb
 
 def whirc_plot():
     
     #Here I get the data from the Geha 2012 paper, which has M < 1e10 M_sun
-    hdulist = pyfits.open('Downloads/geha2012.fits.gz')
+    hdulist = pyfits.open('../Downloads/geha2012.fits.gz')
     ntable = hdulist[1].data
 
     NSAID = ntable['NSAID']
@@ -29,8 +30,8 @@ def whirc_plot():
     #Ha
     iso_ha = [nha[line] for line in range(len(nmass)) if ndist[line] > 1.5]
     niso_ha = [nha[line] for line in range(len(nmass)) if ndist[line] < 1.5]
-
-
+    
+        
     #Define Quenching Criterion
     a, b = 0.6, 0.1
     def dbreak(m):
@@ -88,7 +89,7 @@ def whirc_plot():
 
 
     #Here I get the data from the full NSA catalog
-    NSA_cat = pyfits.open('Downloads/nsa_v0_1_2.fits')
+    NSA_cat = pyfits.open('../Downloads/nsa_v0_1_2.fits')
     table = NSA_cat[1].data
 
     NSAID = table['NSAID']
@@ -114,6 +115,7 @@ def whirc_plot():
     def dbreak(m):
         return a + b*m
     
+    
     #Recreate Geha 2012 Figure 2
     f = plt.figure()
     ax = f.add_subplot(111)
@@ -137,7 +139,7 @@ def whirc_plot():
     plt.plot(dwarf_quenched_m, dwarf_quenched_ha, '.', color = 'red', markersize = 1, label = 'Quenched ($H\\alpha < 2$)')
     plt.plot(dwarf_notquen_m, dwarf_notquen_ha, '.', color = 'black', markersize = 1, label = 'Star Forming')
     plt.plot(big_quenched_m, big_quenched_ha, '.', color = 'red', markersize = 1)
-    plt.plot(big_notquen_m, big_notquen_ha, '.', color = 'black', markersize = 1)
+    plt.plot(big_notquen_m, big_notquen_ha, '.', color = '0.75', markersize = 1)
     plt.xlabel('$\log_{10}[M_{stellar}$ $(M_{\odot})]$')
     plt.ylabel('$H\\alpha$ EW')
     plt.title('$H\\alpha$ EW Quenching Criterion')
@@ -160,9 +162,9 @@ def whirc_plot():
     plt.ylabel('$D_n4000$')
     plt.title('Sample in Context')
     ax.set_ylim([0.8, 2.2])
-    ax.set_xlim([0, 100])
-    ax.legend(loc = 1, frameon = True, markerscale = 2, fontsize = 11)
-    plt.savefig('Calibs/pics/geha_2012_haEW_vs_d4000')
+    ax.set_xlim([-1.5, 5])
+    ax.legend(loc = 1, frameon = True, markerscale = 1, fontsize = 11)
+    plt.savefig('Calibs/pics/geha_2012_haEW_vs_d40001')
 
 
     #Plot mass vs D4000, showing quenched, K+A, and not quenched
@@ -266,4 +268,66 @@ def whirc_plot():
     plt.plot(sample_mass_niso, sample_d4000_niso, 'o', color = 'red', markersize = 5, label = 'This Sample')
 
     plt.savefig('Calibs/pics/Geha_2012_iso_vs_niso')
+    
+    #BIN ISOLATED STUFF ACCORDING TO MASS
+    mass_bins = np.arange(7, 10.5, 0.5)
+    plotbins = np.arange(7.5, 10.5, 0.5)
+    binned_isomass = np.histogram(iso_mass, mass_bins)[0]
+    
+    binned_iso_quenched = np.histogram(quenched_mass_iso, mass_bins)[0]
+    iso_quen_frac = [binned_iso_quenched[line]/binned_isomass[line] for line in range(len(binned_isomass))]
+    
+    binned_iso_unquen = np.histogram(unquen_mass_iso, mass_bins)[0]
+    iso_unquen_frac = [binned_iso_unquen[line]/binned_isomass[line] for line in range(len(binned_isomass))]
+    
+    
+    binned_iso_KA1 = np.histogram(K_A_m1_iso, mass_bins)[0]
+    iso_KA1_frac = [binned_iso_KA1[line]/binned_isomass[line] for line in range(len(binned_isomass))]
+    
+    
+    binned_iso_KA2 = np.histogram(K_A_m2_iso, mass_bins)[0]
+    iso_KA2_frac = [binned_iso_KA2[line]/binned_isomass[line] for line in range(len(binned_isomass))]
+    
+    print binned_isomass
 
+    l = plt.figure()
+    ax = l.add_subplot(211)
+    
+    plt.plot(plotbins, iso_quen_frac, 'o-', color = 'magenta', label = '$H\\alpha<2$, $D_n4000 >$ break')
+    plt.plot(plotbins, iso_KA1_frac, 'o-', color = 'cyan', label = '$H\\alpha<2$, $D_n4000 <$ break')
+    plt.plot(plotbins, iso_KA2_frac, 'o-', color = 'yellow', label = '$H\\alpha>2$, $D_n4000 >$ break')
+    plt.title('Quenched / K+A fraction')
+    plt.xlabel('Stellar Mass Bin: $\log_{10}[M_{stellar}$ $(M_{\odot})]$')
+    plt.ylabel('Fraction of total $M_{stellar}$')
+    ax.set_xlim([10.1, 7.4])
+    plt.legend(loc = 1, fontsize = 11)
+    
+    bx = l.add_subplot(212)
+    plt.plot(plotbins, iso_unquen_frac, 'o-', color = 'black', label = '$H\\alpha>2$, $D_n4000$ < break')
+    plt.title('Star Forming Fraction')
+    plt.xlabel('Stellar Mass Bin: $\log_{10}[M_{stellar}$ $(M_{\odot})]$')
+    plt.ylabel('Fraction of total $M_{stellar}$')
+    bx.set_xlim([10.1, 7.4])
+    plt.legend(loc = 1, fontsize = 11)
+    plt.tight_layout()
+    plt.savefig('Calibs/pics/Geha_2012_quenched_fraction_binned.png')
+    
+    small_ha_high_d4000 = [iso_ha[line] for line in range(len(iso_ha)) if iso_mass[line] < 10.0 and iso_d4000[line] > dbreak(iso_mass[line])]
+    high_d4000_small_ha = [iso_d4000[line] for line in range(len(iso_d4000)) if iso_mass[line] < 10.0 and iso_ha[line] < 2.0]
+    
+    k = plt.figure()
+    ax = k.add_subplot(211)
+    
+    plt.hist(small_ha_high_d4000, range=(-5,20), bins = 20)
+    plt.title('$M_{stellar}<10$ and $D_n4000 >$ break')
+    plt.xlabel('H$\\alpha$EW')
+    plt.ylabel('frequency')
+    
+    bx = k.add_subplot(212)
+    plt.hist(high_d4000_small_ha, range = (0.7, 2.5), bins = 20)
+    plt.title('$M_{stellar}<10$ and H$\\alpha<2$')
+    plt.xlabel('$D_n4000$')
+    plt.ylabel('frequency')
+    plt.tight_layout()
+    plt.savefig('Calibs/pics/Geha_2012_hist_of_high_low_dn_Ha')
+    
