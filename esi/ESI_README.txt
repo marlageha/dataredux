@@ -16,7 +16,8 @@
    >> esi.esi_mkflats()
 
 5) From flat, find orders and fit a polynomial to them. (This also requires the esi 
-   module esi_trace_cen() to be in the pythonpath directory). 
+   module esi_trace_cen() to be in the pythonpath directory). Normalize each order 
+   by dividing it by its polynomial. Write Calibs/norm_flat.fits 
    >> esi.esi_traceflat()
 
  
