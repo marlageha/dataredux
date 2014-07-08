@@ -31,7 +31,7 @@ def esi_traceflat():
 
     # SMOOTH FLAT SLIGHTLY
     sflat = ndimage.gaussian_filter(flat, 3)
-    
+
     lx = len(sflat[0,:])
     ly = len(sflat[:,0])
 
@@ -98,7 +98,7 @@ def esi_traceflat():
             xt = np.int(np.round(xtrace[n,row-1]))
             xarr = np.arange(xt-5,xt+5)
             local_peak = mag1d[xarr]
-        
+    
             #just trying alternative:
             mx = local_peak.argmax() #highest point instead of local max finding.
     		#mx = (np.diff(np.sign(np.diff(local_peak))) < 0).nonzero()[0] + 1
@@ -129,7 +129,7 @@ def esi_traceflat():
             local_peak = mag1d[xarr]#
             #just trying alternative:
             mx = local_peak.argmax() #highest point instead of local max finding.
-        
+    
             #mx = (np.diff(np.sign(np.diff(local_peak))) < 0).nonzero()[0] + 1
             #print row, n ,mx
             xtrace[n,row] = mx-5+xt
@@ -142,7 +142,7 @@ def esi_traceflat():
                 local_peak = mag1d[xarr]#
                 #just trying alternative:
                 mx = local_peak.argmax() #highest point instead of local max finding.
-            
+        
                 #mx = (np.diff(np.sign(np.diff(local_peak))) < 0).nonzero()[0] + 1
                 #print row, n ,mx
 
@@ -162,16 +162,16 @@ def esi_traceflat():
         mag = np.hypot(dx, dy) 		  # magnitude
         mag1d = np.sum(mag,axis=0)
         x = np.arange(0,len(mag1d))
-    
+
 
         for n in xrange(0,14,1):
             xt = np.int(np.round(xtrace[n,row+1]))
             xarr = np.arange(xt-5,xt+5)
             local_peak = mag1d[xarr]
-        
+    
             #just trying alternative:
             mx = local_peak.argmax() #highest point instead of local max finding.
-        
+    
     		#mx = (np.diff(np.sign(np.diff(local_peak))) < 0).nonzero()[0] + 1
     #		plt.plot(xarr,local_peak,'r+')#
     #		plt.show()
@@ -183,7 +183,7 @@ def esi_traceflat():
                 xt = np.int(np.round(xtrace[n,row+1]))
                 xarr = np.arange(xt-5,xt+5)
                 local_peak = mag1d[xarr]
-            
+        
                 #just trying alternative:
                 mx = local_peak.argmax() #highest point instead of local max finding.
     			#mx = (np.diff(np.sign(np.diff(local_peak))) < 0).nonzero()[0] + 1
@@ -219,7 +219,7 @@ def esi_traceflat():
     ax.set_ylim([0, 4096])
     plt.savefig('Calibs/pics/orders2.png')
     '''
-   
+
     #SAVE ORDERS ACCORDING TO POLYFIT
     edge_fits = [np.polyfit(ytrace[n,1000:3400], xtrace[n,1000:3400],3) for n in range(20)]
 
@@ -262,12 +262,12 @@ def esi_traceflat():
         for line in range(ly):
             line_sum = np.mean(z[line])
             ord_tot.append(line_sum)
-        
+    
         #p = np.polyfit(y, ord_tot, 5)
         #xp = poly1d(p)
-    
+
         smoothed = gaussian_filter1d(ord_tot, 100)
-    
+
         plt.plot(y, ord_tot, '.', markersize = 1, color = 'black')
         #plt.plot(y, xp(y), color = 'magenta')
         plt.plot(y, smoothed, color = 'magenta')
@@ -285,7 +285,7 @@ def esi_traceflat():
     print "normalizing flat..."
     z = np.zeros((ly, lx)) #to hold divided orders
     for order in range(len(esiorders)):
-    
+
         num = order #looping through orders
 
         order_left = esiorders[num].xl
@@ -302,35 +302,37 @@ def esi_traceflat():
 
         #only accept what passes both masks:
         mask = mask_left*mask_right
-    
+
         #dummy order to hold each order while it is divided
         blank = np.zeros((ly, lx))
         blank[mask] = flat[mask]
-    
+
         #making the profile for each order
         ord_tot = []
         for line in range(ly):
             line_mean = np.mean(blank[line])
             ord_tot.append(line_mean)
-    
+
         #fit 10th order polynomial
         p = np.polyfit(y, ord_tot, 10) 
         xp = np.poly1d(p)
-    
+
         #dividing each order line by line
         for line in range(ly):
            blank[line] = blank[line]/xp(line)
-    
+
         z[mask] = blank[mask] 
     
+    '''
     f = plt.figure()
     plt.imshow(z[1400:2800, :], cmap = 'gray')
     plt.savefig('Calibs/pics/normflat.tiff')
+    '''
 
     #Divide old flat by new flat, write to file
     new_flat = np.zeros((ly, lx))
     for order in range(len(esiorders)):
-    
+
         num = order
 
         order_left = esiorders[num].xl
@@ -345,13 +347,46 @@ def esi_traceflat():
 
         #only accept what passes both masks:
         mask = mask_left*mask_right
-    
+
         #dummy = np.zeros((ly, lx))
         new_flat[mask] = flat[mask]/z[mask]
     
+    #MAKE MASK FOR ALL ORDERS
+    #master_mask == all the orders; background_mask == background (doh!)
+    master_mask = np.zeros((ly, lx), dtype = bool)
+    for order in range(len(esiorders)):
+    
+        num = order
+
+        order_left = esiorders[num].xl
+        order_right = esiorders[num].xr
+    
+        lx = len(sflat[0,:])
+        ly = len(sflat[:,0])
+        X, Y = np.ogrid[0:ly, 0:lx]
+
+        mask_left = order_left(X) < Y 
+        mask_right = order_right(X) > Y
+
+        #only accept what passes both masks:
+        mask = mask_left*mask_right #for one mask
+    
+        master_mask = master_mask + mask
+    
+    background_mask = -master_mask
+
+    '''
+    test = np.zeros((ly, lx))
+    test[master_mask] = 1
+    test[background_mask] = 0.5
+    q = plt.figure()
+    plt.imshow(test, cmap = 'gray')
+
+
     g = plt.figure()
     plt.imshow(new_flat[1400:2800, :], cmap = 'gray')
     plt.savefig('Calibs/pics/dividedflat.tiff')
+    '''
 
     divided = pyfits.PrimaryHDU(new_flat)
     divider = pyfits.PrimaryHDU(z)
