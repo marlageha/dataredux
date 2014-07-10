@@ -1,19 +1,17 @@
-#! /usr/bin/python
 ##################################################
-#  ESI_traceflat
-#
-#  USING FLAT FIELD, FIND X/Y FOR ORDER EDGES  
-#
-#  MG 4/14
+#      Gets orders from flat                     #
+#      Creates normalized flat                   #
+#      Writes orders mask to file                #
 ##################################################
 
 #so we can use a function from another program in this module.
 from esi import esi_trace_cen
-import pyfits
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import ndimage
 import pdb
+import pickle
+import pyfits
 
     
 class orders:
@@ -277,6 +275,34 @@ def esi_traceflat():
     plt.savefig('Calibs/pics/flat_int_ordspline.png')
     '''
 
+    #MAKE MASK FOR ALL ORDERS
+    #master_mask == all the orders; background_mask == background (doh!)
+    master_mask = np.zeros((ly, lx), dtype = bool)
+    for order in range(len(esiorders)):
+    
+        num = order
+
+        order_left = esiorders[num].xl
+        order_right = esiorders[num].xr
+    
+        lx = len(sflat[0,:])
+        ly = len(sflat[:,0])
+        X, Y = np.ogrid[0:ly, 0:lx]
+
+        mask_left = order_left(X) < Y 
+        mask_right = order_right(X) > Y
+
+        #only accept what passes both masks:
+        mask = mask_left*mask_right #for one mask
+    
+        master_mask = master_mask + mask
+    
+    background_mask = -master_mask
+    
+    #write masks to file
+    pickle.dump(master_mask, open('Calibs/orders_mask.p', 'wb'))
+    pickle.dump(background_mask, open('Calibs/background_mask.p', 'wb'))
+
     # DIVIDE EACH ORDER BY SMOOTHED PROFILE
 
     #f = plt.figure()
@@ -321,7 +347,27 @@ def esi_traceflat():
         for line in range(ly):
            blank[line] = blank[line]/xp(line)
 
-        z[mask] = blank[mask] 
+        z[mask] = blank[mask]
+        
+    z[background_mask] = 1.0 
+    
+    #Get rid of zeros in flat
+    x_zero = np.where(z == 0)[0]
+    y_zero = np.where(z == 0)[1]
+
+    for line in range(len(x_zero)):
+        adjacent = [(x_zero[line], y_zero[line]+1), (x_zero[line], y_zero[line]-1), 
+                    (x_zero[line]+1, y_zero[line]), (x_zero[line]-1, y_zero[line])]
+                
+        try:
+            adj_vals = [z[x] for x in adjacent]
+        
+        except IndexError:
+             #If it's at the edge and there's no adjacent:
+            adj_vals = [12.0 for x in range(4)] #Like whatevz. 
+        
+    
+        z[x_zero[line], y_zero[line]] = np.mean(adj_vals)
     
     '''
     f = plt.figure()
@@ -351,30 +397,7 @@ def esi_traceflat():
         #dummy = np.zeros((ly, lx))
         new_flat[mask] = flat[mask]/z[mask]
     
-    #MAKE MASK FOR ALL ORDERS
-    #master_mask == all the orders; background_mask == background (doh!)
-    master_mask = np.zeros((ly, lx), dtype = bool)
-    for order in range(len(esiorders)):
     
-        num = order
-
-        order_left = esiorders[num].xl
-        order_right = esiorders[num].xr
-    
-        lx = len(sflat[0,:])
-        ly = len(sflat[:,0])
-        X, Y = np.ogrid[0:ly, 0:lx]
-
-        mask_left = order_left(X) < Y 
-        mask_right = order_right(X) > Y
-
-        #only accept what passes both masks:
-        mask = mask_left*mask_right #for one mask
-    
-        master_mask = master_mask + mask
-    
-    background_mask = -master_mask
-
     '''
     test = np.zeros((ly, lx))
     test[master_mask] = 1

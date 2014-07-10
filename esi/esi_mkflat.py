@@ -29,6 +29,7 @@ def esi_mkflat():
     # READ BIAS FRAME
     bias = pyfits.getdata('Calibs/bias.fits')
     
+    #READ LOG
     im1 = open('Logs/esi_info.dat','r')
     data1 = im1.readlines()
     im1.close()
