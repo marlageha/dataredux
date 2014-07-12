@@ -22,8 +22,14 @@
    Calibs/.  
    >> esi.esi_traceflat()
 
-6) In Calibs, make directories reduced/ and variance/. Read in the spectra from
-   each object and median combine. Write each one to Calibs/reduced/objid_med.fits.
+6) Make a directory Calibs/cosmicless. From http://obswww.unige.ch/~tewes/cosmics_dot_py/,
+   (or just from the git_hub repository), download cosmics.py and save it to the 
+   directory of your PYTHONPATH variable in .bash_profile. Remove cosmic rays from each 
+   of the raw science images and the lamps. Write each file to Calibs/cosmicless.
+   >> esi.esi_cosmic()
+
+7) In Calibs, make directories reduced/ and variance/. Read in the spectra from
+   each object and average with rejection. Write each one to Calibs/reduced/objid_med.fits.
    Do the same for lamps. Make a variance image for each science image whose pixels
    are 1/(sigma)^2. Write to Calibs/variance/. 
    >> esi.esi_reduce() 

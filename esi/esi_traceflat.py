@@ -277,7 +277,10 @@ def esi_traceflat():
 
     #MAKE MASK FOR ALL ORDERS
     #master_mask == all the orders; background_mask == background (doh!)
+    print 'writing masks...'
+    
     master_mask = np.zeros((ly, lx), dtype = bool)
+    all_order_masks = []
     for order in range(len(esiorders)):
     
         num = order
@@ -294,6 +297,8 @@ def esi_traceflat():
 
         #only accept what passes both masks:
         mask = mask_left*mask_right #for one mask
+        
+        all_order_masks.append(mask)
     
         master_mask = master_mask + mask
     
@@ -302,6 +307,7 @@ def esi_traceflat():
     #write masks to file
     pickle.dump(master_mask, open('Calibs/orders_mask.p', 'wb'))
     pickle.dump(background_mask, open('Calibs/background_mask.p', 'wb'))
+    pickle.dump(all_order_masks, open('Calibs/all_order_masks.p', 'wb'))
 
     # DIVIDE EACH ORDER BY SMOOTHED PROFILE
 
