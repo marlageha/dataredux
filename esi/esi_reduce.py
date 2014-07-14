@@ -9,12 +9,14 @@
 ######################################################
 
 
-from __future__ import division
+from __future__ import divisiosn
 from astropy.stats import sigma_clip
+import matplotlib.pyplot as plt
 import numpy as np
 import pickle
 import pyfits
 import scipy.ndimage 
+import pdb
 
 def esi_reduce():
 
@@ -59,26 +61,26 @@ def esi_reduce():
     for line in range(len(usable)):
         alldata.append([filename[line],dateobs[line],objname[line],imgtype[line],
                         ra[line],dec[line],exptime[line],usable[line]])
-        
+    
     #Find good files:
     good = []
     for line in range(len(alldata)):
        if "yes" in alldata[line][7]:
            good.append(alldata[line])
 
-    #Find list of objects and lines:
+    #Find list of objects 
     names = []
     for line in range(len(alldata)):
-        if "Object" in alldata[line][3] and float(alldata[line][6]) > 600 or "Line" in alldata[line][3]:
+        if "Object" in alldata[line][3] and float(alldata[line][6]) > 600:
             names.append(alldata[line][2])
     objects = np.array(list(set(names)))
     objects.sort() #ascending order, modify in place 
 
-    #Reduce for each object or line
+    #Reduce for each object 
     for obj_id in objects:
-    
+
         print "reducing " + str(obj_id) + '...'
-    
+
         #Find files related to obj_id:
         aobj_id = []
         for line in range(len(good)):
@@ -94,24 +96,73 @@ def esi_reduce():
         all_sci = []
         for line in obj_locs:
             sci = pyfits.getdata(line)[:, 25:2070]
-            sci = (sci - bias)/flat
             all_sci.append(sci)
-            
+        
         #Get a mask for remaining cosmic rays; mean combine
         print "averaging with rejection..."
-        filtered = sigma_clip(all_sci, axis=0, copy = False, varfunc = np.median, sig = 5)
-        mean = np.median(filtered, axis = 0)
+        filtered = sigma_clip(all_sci, axis=0, copy = False, varfunc = np.median, sig = 15)
+        filtered = (filtered - bias)/flat
+    
+        mean = np.mean(filtered, axis = 0)
         fits = pyfits.PrimaryHDU(mean.data)
         fits.writeto('Calibs/reduced/'+str(obj_id)+'_mean.fits', clobber = True)
+        #pdb.set_trace()
+
+    #Reduce lines
+    names = []
+    for line in range(len(alldata)):
+        if "Line" in alldata[line][3]:
+            names.append(alldata[line][2])
+    objects = np.array(list(set(names)))
+    objects.sort() #ascending order, modify in place 
+
+    #Reduce for each line 
+    for obj_id in objects:
+
+        print "reducing " + str(obj_id) + '...'
+
+        #Find files related to obj_id:
+        aobj_id = []
+        for line in range(len(good)):
+            if str(obj_id) in good[line][2]:
+                aobj_id.append(good[line])
+        print str(len(aobj_id)),"files for " + str(obj_id)
+
+        #Write Path to each object's files
+        obj_locs = ['Raw/' + str(aobj_id[line][0]) for line in range(len(aobj_id))]
+
+        #Read in Data
+        all_sci = []
+        for line in obj_locs:
+            sci = pyfits.getdata(line)[:, 25:2070]
+            sci = (sci - bias)/flat
+            all_sci.append(sci)
+        
+        #median, not mean, for lines
+        mean = np.median(all_sci, axis = 0)    
     
+        fits = pyfits.PrimaryHDU(mean)
+        fits.writeto('Calibs/reduced/'+str(obj_id)+'_mean.fits', clobber = True)
+
 
     #Make variance image for each science image:
     #The break in the amplifiers is at 1022-1023. Everything increases at 1023. 
+    #Find ALL objects
+    #Find list of objects 
+    
+    names = []
+    for line in range(len(alldata)):
+        if "Object" in alldata[line][3] and float(alldata[line][6]) > 600 or "Line" in alldata[line][3]:
+            names.append(alldata[line][2])
+    objects = np.array(list(set(names)))
+    objects.sort() #ascending order, modify in place 
+    
+
 
     for obj_id in objects:
-    
+
         print "making variance for " + str(obj_id) + '...'
-    
+
         #Find files related to obj_id:
         aobj_id = []
         for line in range(len(good)):
@@ -122,14 +173,14 @@ def esi_reduce():
         #Write Path to each object's files
         obj_locs = ['Calibs/cosmicless/' + str(obj_id) + '_' + str(line+1) + 
                     'decos.fits' for line in range(len(aobj_id))]
-    
+
         #CALCULATE EACH NOISE CONTRIBUTION SEPARATELY
-    
+
         #Read in Data
         all_var = []
         for line in range(len(obj_locs)):
             im = pyfits.getdata(obj_locs[line])[:, 25:2070]
-        
+    
             rn = np.zeros((4096, 2045))
             #make gain mask: 
             right_mask = np.empty(flat.shape,dtype=bool)
@@ -160,14 +211,14 @@ def esi_reduce():
 
             right_gain = left_gain*left_bias/right_bias
             #as expected, gain a little lower on right side
-        
+    
             poisson[left_mask] = np.sqrt(im[left_mask]/left_gain)
             poisson[right_mask] = np.sqrt(im[right_mask]/right_gain)
-        
+    
             noise = np.sqrt(rn**2+poisson**2)
-        
+    
             variance = 1/noise**2
-        
+    
             #write to file
             fits = pyfits.PrimaryHDU(variance)
             fits.writeto('Calibs/variance/'+str(obj_id)+'_'+str(line + 1)+'_var.fits', clobber = True)

@@ -12,18 +12,6 @@ import pyfits
 import numpy as np
 
 def esi_mkflat():
-
-    #Old stuff:
-    '''
-    # READ DATA SUMMARY
-    efile = pyfits.open('esi_data.fits')
-    esi = efile[1].data
-
-    # FIND ALL DOME FLAT FILES
-    flattrue = (esi.field('exptime') == 150)  # CAREFUL!!
-    flatfile = 'Raw/'+esi[flattrue].field('filename')
-    print len(flatfile)
-    '''
     
 
     # READ BIAS FRAME
