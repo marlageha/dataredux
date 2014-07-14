@@ -9,7 +9,7 @@
 ######################################################
 
 
-from __future__ import divisiosn
+from __future__ import division
 from astropy.stats import sigma_clip
 import matplotlib.pyplot as plt
 import numpy as np

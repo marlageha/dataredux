@@ -410,6 +410,8 @@ def esi_traceflat():
     test[background_mask] = 0.5
     q = plt.figure()
     plt.imshow(test, cmap = 'gray')
+    # turns out you don't have to do this, you can just do 
+    # plt.imshow(master_mask)
 
 
     g = plt.figure()
