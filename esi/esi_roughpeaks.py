@@ -119,8 +119,10 @@ def esi_roughpeaks():
             ord_tot = ord_tot - fit(range(4096))
             
             #smooth slightly, find slope
-            smoothed = gaussian_filter1d(ord_tot, 3)
-            deriv = scipy.ndimage.sobel(ord_tot)#mayber deriv of smoothed?
+            smoothed = gaussian_filter1d(ord_tot, 5)
+            
+            smooted = gaussian_filter1d(ord_tot, 1.5)
+            deriv = scipy.ndimage.sobel(smooted)#mayber deriv of smoothed?
             
             #find local maxes
             mask = np.r_[True, smoothed[1:] > smoothed[:-1]] & np.r_[smoothed[:-1] > smoothed[1:], True]
@@ -152,7 +154,7 @@ def esi_roughpeaks():
             maxes = np.array(maxes)
     
             #slopes at least steep enough on either side
-            good_max = [line for line in range(len(xcenr)) if mins[line] < -0.004 and maxes[line] > 0.004]
+            good_max = [line for line in range(len(xcenr)) if mins[line] < -0.003 and maxes[line] > 0.003]
             xcenr = np.array(xcenr)
             mcenr = np.array(mcenr)
 
