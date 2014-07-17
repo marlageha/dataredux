@@ -1,4 +1,5 @@
 1) Make directory ESI. Inside ESI, make directories Raw/, Calibs/, Final/, Logs/.
+
    Inside Logs/, make directory pics/.  Move data to Raw/. Extract data from headers
    in Python,
    >> import esi
@@ -38,3 +39,11 @@
    sum over x coordiates in each order, and find the peaks (to +/- 1 pixel) in 
    each order. Write peak files to Calibs/lamp_peaks/.
    >> esi.esi_roughpeaks()
+
+9) In Calibs, make directory Calibs/line_lists. Copy the directory order_lists/ from 
+   GitHub into line_lists. Fit a wavelength solution to each order using line lists.
+   Write wavelength solutions and good lines to lambda_solutions.p
+   >> esi.esi_lambda()
+
+10) In Calibs, make directory Calibs/sky_sub. Using masks made in esi_traceflat(), 
+    measure sky values at edges of orders and subtract.

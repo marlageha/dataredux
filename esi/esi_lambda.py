@@ -8,6 +8,9 @@
 #                                                               #
 #       Writes polynomial wavelength solution to                #
 #       Calibs/lambda_solutions.p                               #
+#       Also writes good pixels/wavelengths that are            #
+#       not rejected by iterative fit to [2] and [3]            #
+#       of pickle file                                          #
 #                                                               #
 #       Kareem El-Badry, 07/15/2014                             #
 #################################################################
@@ -28,7 +31,6 @@ def esi_lambda():
     pixels = []
     
     for order_num in range(10):
-        
         #retrieve the line lists, originally from esi but sorted to be good
         lines = open('Calibs/line_lists/order_lists/wavelengths/order_' + str(order_num), 'r')
         data1 = lines.readlines()
@@ -71,17 +73,58 @@ def esi_lambda():
         
     #Now find the best wavelength solution
     solutions = []
+    invsolutions = []
+    
+    gpix = []
+    g_ang = []
     
     for ord_num in range(len(pixels)):
         
         pixs = pixels[ord_num]
         angstroms = wavelengths[ord_num]
         
-        fit = np.polyfit(pixs, angstroms, 5)
-        solution = np.poly1d(fit)
+        #proceed with iterative fit
+        x = pixs
+        y = angstroms
         
-        solutions.append(solution)
-
-    pickle.dump(solutions, open('Calibs/lambda_solutions.p', 'wb'))
+        done = False
+        while not done:
+            done = True
+            fit = np.poly1d(np.polyfit(x, y, 7))
+            resid = y - fit(x)
+            std = np.std(resid)
+            badindices = np.where(np.abs(resid) > 1.3*std)[0]
+            if badindices.size > 0 and len(x) - len(badindices) > 20:
+                done = False
+                x = np.delete(x, badindices)
+                y = np.delete(y, badindices)
+        
+        solutions.append(fit)
+        
+        gpix.append(x)
+        g_ang.append(y)
+        
+        #next iterative fit
+        x = angstroms
+        y = pixs
+        
+        done = False
+        while not done:
+            done = True
+            invfit = np.poly1d(np.polyfit(x, y, 7))
+            resid = y - invfit(x)
+            std = np.std(resid)
+            badindices = np.where(np.abs(resid) > 1.3*std)[0]
+            if badindices.size > 0 and len(x) - len(badindices) > 20:
+                done = False
+                x = np.delete(x, badindices)
+                y = np.delete(y, badindices)
+            
+        
+        invsolutions.append(invfit)
+        
+    pickle_obj = [solutions, invsolutions, gpix, g_ang]
+    pickle.dump(pickle_obj, open('Calibs/lambda_solutions.p', 'wb'))
+    
     
     

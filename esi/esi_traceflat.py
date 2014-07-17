@@ -1,7 +1,9 @@
 ##################################################
 #      Gets orders from flat                     #
 #      Creates normalized flat                   #
-#      Writes orders mask to file                #
+#      Writes orders masks to file               #
+#                                                #
+#      Kareem El-Badry, 07/07/2014               #
 ##################################################
 
 #so we can use a function from another program in this module.
@@ -281,6 +283,7 @@ def esi_traceflat():
     
     master_mask = np.zeros((ly, lx), dtype = bool)
     all_order_masks = []
+    sky_mask = []
     for order in range(len(esiorders)):
     
         num = order
@@ -292,15 +295,27 @@ def esi_traceflat():
         ly = len(sflat[:,0])
         X, Y = np.ogrid[0:ly, 0:lx]
 
-        mask_left = order_left(X) < Y 
+        mask_left = order_left(X) < Y
+        mask_left3 = order_left(X) +3 < Y
+        mask_left15 = order_left(X)+15 > Y #15 pixels to the right of order edge 
         mask_right = order_right(X) > Y
+        mask_right15 = order_right(X)-15 < Y
+        mask_right3 = order_right(X)-3 >Y
 
         #only accept what passes both masks:
         mask = mask_left*mask_right #for one mask
         
+        smask_left = mask_left3*mask_left15
+        smask_right = mask_right3*mask_right15
+        
+        smask = smask_left + smask_right
+        plt.imshow(smask_left)
+        
         all_order_masks.append(mask)
-    
-        master_mask = master_mask + mask
+        sky_mask.append(smask)
+                
+        #add all orders
+        master_mask = master_mask + mask 
     
     background_mask = -master_mask
     
@@ -308,6 +323,7 @@ def esi_traceflat():
     pickle.dump(master_mask, open('Calibs/orders_mask.p', 'wb'))
     pickle.dump(background_mask, open('Calibs/background_mask.p', 'wb'))
     pickle.dump(all_order_masks, open('Calibs/all_order_masks.p', 'wb'))
+    pickle.dump(sky_mask, open('Calibs/sky_mask.p', 'wb'))
 
     # DIVIDE EACH ORDER BY SMOOTHED PROFILE
 
