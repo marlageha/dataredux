@@ -46,4 +46,21 @@
    >> esi.esi_lambda()
 
 10) In Calibs, make directory Calibs/sky_sub. Using masks made in esi_traceflat(), 
-    measure sky values at edges of orders and subtract.
+    measure sky values at edges of orders and subtract. Only very rough at the moment.
+    Write (roughly) sky-subtracted stuff to Calibs/sky_sub.
+    >> esi.esi_skysub()
+
+11) Fit a gaussian to each peak in the lamps and record its center, which is more
+    accurate than the estimate from esi_roughpeaks(). Compare to rough line lists
+    and only keep the ones that we've already found and know the actual wavelengths 
+    of. Write improved line lists to Calibs/line_lists/order_lists/pixels/better_
+    order[obj_id].dat. 
+    >> esi.esi_gauss()
+
+12) Fit a 2-dimensional wavelength solution to each order. Break each order into
+    ~15 columns that are 10 pixels wide. Find all the peaks in each column, so we
+    can see how the peak moves in y-coordinate as we move across the order. This give us
+    a whole bunch of points in (x,y,wavelength) space, to which we fit a 2d polynomial 
+    surface. Write the polynomial solutions to Calibs/solution2d.p
+    >> esi.esi_solution2d()
+

@@ -22,6 +22,7 @@ import numpy as np
 import pickle
 import pyfits
 import scipy.ndimage
+import pdb
 
 def esi_skysub():
 
@@ -30,6 +31,7 @@ def esi_skysub():
     orders_mask = pickle.load(open('Calibs/orders_mask.p', 'rb'))
     all_order_mask = pickle.load(open('Calibs/all_order_masks.p', 'rb'))
     sky_mask = pickle.load(open('Calibs/sky_mask.p', 'rb'))
+    
 
     #get names of lamps, first read in log:
     im1 = open('Logs/esi_info.dat','r')
@@ -77,21 +79,38 @@ def esi_skysub():
     objects = np.array(list(set(names)))
     objects.sort() #ascending order, modify in place
 
+    '''
+    sky_objs = ['81315', '113209', '119887', '36363', 'Beowulf1',
+                '37836', '50778'] #dim objects that are mostly sky
+                
+    skys = []
+    for obj_id in sky_objs:
+        
+        img = pyfits.getdata('Calibs/reduced/'+str(obj_id)+'_mean.fits')
+        skys.append(img)
+        
+    rough_sky = np.median(skys, axis = 0)
+    fits = pyfits.PrimaryHDU(rough_sky)
+    fits.writeto('Calibs/skytest.fits', clobber = True)'''
+    
+    
+    rough_sky = pyfits.getdata('Calibs/skytest.fits')
+    rough_sky = scipy.ndimage.median_filter(rough_sky, size = (1,5))#smooth a bit
     #loop through objects 
-    to_meds = []
     for obj_id in objects:
         print "sky subtracting " +str(obj_id) + '...'
 
         #Get object
         image = pyfits.getdata('Calibs/reduced/'+str(obj_id)+'_mean.fits')
-
+        #image = image - rough_sky
+        
         #start with a blank array; fill it order by order
         sky = np.zeros((4096, 2045))
         for num in range(len(sky_mask)):
 
             #load order to otherwise blank array
             blank = np.zeros((4096, 2045))
-            blank[sky_mask[num]] = image[sky_mask[num]]
+            blank[sky_mask[num]] = image[sky_mask[num]] 
 
             #average over x pixels
             ord_tot = []
@@ -111,11 +130,50 @@ def esi_skysub():
     
             sky[all_order_mask[num]] = dummy[all_order_mask[num]]
     
-        sky = scipy.ndimage.median_filter(sky, size = (5,1))
+        sky = scipy.ndimage.median_filter(sky, size = (3,1))
     
         image[orders_mask] = (image - sky)[orders_mask]
-        image[-orders_mask] = 0
+        #image[-orders_mask] = 0
+        
+        
+        #Get rid of pesky dead column nonsense:
+        mask1 = np.abs(image) > 2
+        mask2 = np.zeros((4096, 2045), dtype = 'bool')
+        mask2[2645:4096, 410:450] = True
+        mask = mask1*mask2
+        #pickle.dump(mask, open('Calibs/bad_pix.p', 'wb'))
+        #pdb.set_trace()
+        '''
+        print "removing bad pixels..."
+        x_zero = np.where(image < -5)[0]
+        y_zero = np.where(image < -5)[1]
 
+        for line in range(len(x_zero)):
+            
+            #ok, but slow
+            adjacent = [(x_zero[line], y_zero[line]+1), (x_zero[line], y_zero[line]-1), 
+                        (x_zero[line]+1, y_zero[line]), (x_zero[line]-1, y_zero[line]),
+                        (x_zero[line]+1, y_zero[line]+1), (x_zero[line]-1, y_zero[line]-1),
+                        (x_zero[line]+1, y_zero[line]-1), (x_zero[line]-1, y_zero[line]+1),
+                        (x_zero[line], y_zero[line]+2), (x_zero[line], y_zero[line]-2), 
+                        (x_zero[line]+2, y_zero[line]), (x_zero[line]-2, y_zero[line]),
+                        (x_zero[line]+2, y_zero[line]+2), (x_zero[line]-2, y_zero[line]-2),
+                        (x_zero[line]+2, y_zero[line]-2), (x_zero[line]-2, y_zero[line]+2)]
+                                        
+            try:
+                adj_vals = [image[x] for x in adjacent if image[x] > -5]
+        
+            except IndexError:
+                 #If it's at the edge and there's no adjacent:
+                adj_vals = [np.median(image) for x in range(len(adjacent))]  
+        
+    
+            image[x_zero[line], y_zero[line]] = np.median(adj_vals)
+        '''
+        image[mask] = np.median(image)
+        
         fits = pyfits.PrimaryHDU(image)
         fits.writeto('Calibs/sky_sub/'+str(obj_id)+'_skysub.fits', clobber = True)
+    
+    
     

@@ -280,6 +280,9 @@ def esi_traceflat():
     #MAKE MASK FOR ALL ORDERS
     #master_mask == all the orders; background_mask == background (doh!)
     print 'writing masks...'
+    #edges 
+    pickle.dump(esiorders, open('Calibs/order_edges.p', 'wb'))
+    
     
     master_mask = np.zeros((ly, lx), dtype = bool)
     all_order_masks = []
@@ -300,7 +303,7 @@ def esi_traceflat():
         mask_left15 = order_left(X)+15 > Y #15 pixels to the right of order edge 
         mask_right = order_right(X) > Y
         mask_right15 = order_right(X)-15 < Y
-        mask_right3 = order_right(X)-3 >Y
+        mask_right3 = order_right(X)-3 > Y
 
         #only accept what passes both masks:
         mask = mask_left*mask_right #for one mask
@@ -309,7 +312,6 @@ def esi_traceflat():
         smask_right = mask_right3*mask_right15
         
         smask = smask_left + smask_right
-        plt.imshow(smask_left)
         
         all_order_masks.append(mask)
         sky_mask.append(smask)
@@ -319,11 +321,20 @@ def esi_traceflat():
     
     background_mask = -master_mask
     
+    #make rough bad pixel map
+    some_flat = pyfits.getdata('Raw/e140306_0006.fits.gz')[:, 25:2070]
+    
+    too_hot = some_flat > 2500
+    mask1 = np.zeros((4096, 2045), dtype = 'bool')
+    mask1[2600:4096, 410:450] = True
+    bad_pix = too_hot*mask1
+    
     #write masks to file
     pickle.dump(master_mask, open('Calibs/orders_mask.p', 'wb'))
     pickle.dump(background_mask, open('Calibs/background_mask.p', 'wb'))
     pickle.dump(all_order_masks, open('Calibs/all_order_masks.p', 'wb'))
     pickle.dump(sky_mask, open('Calibs/sky_mask.p', 'wb'))
+    pickle.dump(bad_pix, open('Calibs/bad_pix.p', 'wb'))
 
     # DIVIDE EACH ORDER BY SMOOTHED PROFILE
 
@@ -332,6 +343,7 @@ def esi_traceflat():
     #ax.set_ylim([-1, 2])
     print "normalizing flat..."
     z = np.zeros((ly, lx)) #to hold divided orders
+    order_polys = []
     for order in range(len(esiorders)):
 
         num = order #looping through orders
@@ -364,13 +376,14 @@ def esi_traceflat():
         #fit 10th order polynomial
         p = np.polyfit(y, ord_tot, 10) 
         xp = np.poly1d(p)
+        order_polys.append(xp)
 
         #dividing each order line by line
         for line in range(ly):
            blank[line] = blank[line]/xp(line)
 
         z[mask] = blank[mask]
-        
+    pickle.dump(order_polys, open('Calibs/order_polys.p', 'wb'))
     z[background_mask] = 1.0 
     
     #Get rid of zeros in flat

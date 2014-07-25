@@ -21,7 +21,6 @@ import numpy as np
 import pickle
 import pyfits
 import scipy.ndimage 
-from scipy.optimize import curve_fit
 import pdb
 
 def esi_lambda():
@@ -52,7 +51,7 @@ def esi_lambda():
         wavelengths.append(good_lines)
         
         #retrieve the pixel locations of those lines, found by esi_roughpeaks.py()
-        lines = open('Calibs/line_lists/order_lists/pixels/order_' + str(order_num), 'r')
+        lines = open('Calibs/line_lists/order_lists/pixels/better_order' + str(order_num)+'.dat', 'r')
         data1 = lines.readlines()
         lines.close()
         
@@ -60,8 +59,8 @@ def esi_lambda():
         usable = []
         for line in data1:
             p = line.split()
-            pix.append(float(p[0])) #p[1] is obsolete
-            usable.append(p[2])
+            pix.append(float(p[0])) 
+            usable.append(p[1])
         
         info = []
         for line in range(len(usable)):
@@ -86,7 +85,7 @@ def esi_lambda():
         #proceed with iterative fit
         x = pixs
         y = angstroms
-        
+
         done = False
         while not done:
             done = True
@@ -101,7 +100,7 @@ def esi_lambda():
         
         solutions.append(fit)
         
-        gpix.append(x)
+        gpix.append(x) #These are the lines not being thrown out.
         g_ang.append(y)
         
         #next iterative fit
@@ -111,7 +110,7 @@ def esi_lambda():
         done = False
         while not done:
             done = True
-            invfit = np.poly1d(np.polyfit(x, y, 7))
+            invfit = np.poly1d(np.polyfit(x, y, 5))
             resid = y - invfit(x)
             std = np.std(resid)
             badindices = np.where(np.abs(resid) > 1.3*std)[0]
