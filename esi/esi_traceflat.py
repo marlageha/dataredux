@@ -299,10 +299,10 @@ def esi_traceflat():
         X, Y = np.ogrid[0:ly, 0:lx]
 
         mask_left = order_left(X) < Y
-        mask_left3 = order_left(X) +3 < Y
-        mask_left15 = order_left(X)+15 > Y #15 pixels to the right of order edge 
+        mask_left3 = order_left(X) +13 < Y #because there's less light at the edges
+        mask_left15 = order_left(X)+25 > Y #15 pixels to the right of order edge 
         mask_right = order_right(X) > Y
-        mask_right15 = order_right(X)-15 < Y
+        mask_right15 = order_right(X)-25 < Y
         mask_right3 = order_right(X)-3 > Y
 
         #only accept what passes both masks:

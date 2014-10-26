@@ -93,6 +93,6 @@ def esi_cosmic():
         
             array, header = cosmics.fromfits(obj_locs[line])
             #array = array - bias #backwards for some reason
-            c = cosmics.cosmicsimage(array, gain = 1.29, readnoise = 2.2, sigclip = 3.0, objlim = 2.0, sigfrac = 0.1, satlevel = -1)
-            c.run(maxiter = 1) # can increase up to 4 to improve precision, but takes longer
+            c = cosmics.cosmicsimage(array, gain = 1.29, readnoise = 2.2, sigclip = 3.8, objlim = 3.0, sigfrac = 0.7, satlevel = -1)
+            c.run(maxiter = 3) # can increase up to 4 to improve precision, but takes longer
             cosmics.tofits('Calibs/cosmicless/' + str(obj_id)+'_'+str(line+1)+'decos.fits', c.cleanarray, header)

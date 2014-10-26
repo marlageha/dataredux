@@ -40,7 +40,6 @@ def esi_solution2d():
     all_order_mask = pickle.load(open('Calibs/all_order_masks.p', 'rb'))
     orders_mask = pickle.load(open('Calibs/orders_mask.p', 'rb'))
 
-
     #get names of lamps, first read in log:
     im1 = open('Logs/esi_info.dat','r')
     data1 = im1.readlines()
@@ -140,7 +139,14 @@ def esi_solution2d():
     #find peaks along different columns in each order 
     pickle_obj = []
     
+   
+    
     for num in range(9): #For last order, we'll have to use XeNe too
+        
+        if num == 5:
+            poly_fit_ord = 6
+        else:
+            poly_fit_ord = 6
         
         print "reducing order " +str(num) +'...'
         
@@ -478,13 +484,13 @@ def esi_solution2d():
             for line in range(len(all_good_peaks[0])):
                 wavelengths2d.append(g_wavelengths[line])
     
-        p_init = models.Polynomial2D(degree=15)
-        fit_p = fitting.LevMarLSQFitter() #possibly should switch to LinearLSQFitter()
+        p_init = models.Polynomial2D(degree=poly_fit_ord)
+        fit_p = fitting.LinearLSQFitter() #possibly should switch to LinearLSQFitter()
         p = fit_p(p_init, x_coords, y_coords, wavelengths2d)
         pickle_obj.append(p)
         
     #------------------------------------------------------------------------#
-    num = 9  #moving on to HgNe and XeNE
+    num = 9  #moving on to HgNe and Xe
     
     print "reducing order " +str(num) +' using HgNeLampe...'        
     obj_id = objects[1] #First HgNe
@@ -1142,8 +1148,8 @@ def esi_solution2d():
         y_coords.append(y_coords_1[line])
         wavelengths2d.append(wavelengths2d_1[line])
         
-    p_init = models.Polynomial2D(degree=15)
-    fit_p = fitting.LevMarLSQFitter() #possibly should switch to LinearLSQFitter()
+    p_init = models.Polynomial2D(degree=poly_fit_ord)
+    fit_p = fitting.LinearLSQFitter() #possibly should switch to LinearLSQFitter()
     p = fit_p(p_init, x_coords, y_coords, wavelengths2d)
     pickle_obj.append(p)
     
