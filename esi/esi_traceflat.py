@@ -287,6 +287,7 @@ def esi_traceflat():
     master_mask = np.zeros((ly, lx), dtype = bool)
     all_order_masks = []
     sky_mask = []
+    cen_mask = []
     for order in range(len(esiorders)):
     
         num = order
@@ -304,7 +305,10 @@ def esi_traceflat():
         mask_right = order_right(X) > Y
         mask_right15 = order_right(X)-25 < Y
         mask_right3 = order_right(X)-3 > Y
+        cen_left = order_left(X) + 30 < Y
+        cen_right = order_right(X) - 30 > Y
 
+        cen_mas = cen_left*cen_right
         #only accept what passes both masks:
         mask = mask_left*mask_right #for one mask
         
@@ -315,6 +319,8 @@ def esi_traceflat():
         
         all_order_masks.append(mask)
         sky_mask.append(smask)
+        
+        cen_mask.append(cen_mas)
                 
         #add all orders
         master_mask = master_mask + mask 
@@ -335,7 +341,8 @@ def esi_traceflat():
     pickle.dump(all_order_masks, open('Calibs/all_order_masks.p', 'wb'))
     pickle.dump(sky_mask, open('Calibs/sky_mask.p', 'wb'))
     pickle.dump(bad_pix, open('Calibs/bad_pix.p', 'wb'))
-
+    pickle.dump(cen_mask, open('Calibs/cen_mask.p', 'wb'))
+    
     # DIVIDE EACH ORDER BY SMOOTHED PROFILE
 
     #f = plt.figure()

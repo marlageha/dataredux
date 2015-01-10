@@ -9,7 +9,7 @@ import pdb
 def whirc_plot():
     
     #Here I get the data from the Geha 2012 paper, which has M < 1e10 M_sun
-    hdulist = pyfits.open('../Downloads/geha2012.fits.gz')
+    hdulist = pyfits.open('Calibs/geha2012.fits.gz')
     ntable = hdulist[1].data
 
     NSAID = ntable['NSAID']
@@ -65,9 +65,9 @@ def whirc_plot():
 
 
     #Find the objects for which I have WHRIC or ESI data 
-    obj_ids = [113209, 119887, 120659, 121130, 122277, 20700, 3478, 35979, 36363,
-               37836, 38329, 38465, 46677, 50778, 51306, 54655, 55500, 57467, 
-               67565, 77610, 78759, 81315]
+    obj_ids = [113209, 119887, 120659, 122277, 20700, 3478, 35979, 36363,
+               37836, 38329, 38465, 46677, 50778, 51306, 54655, 55500,  
+               67565, 81315]
            
     locs = []
     for line in range(len(obj_ids)):

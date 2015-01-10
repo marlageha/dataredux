@@ -149,7 +149,7 @@ def whirc_hist():
     
     #NOW GETTING INFO FROM THE NSA CATALOG
     
-    NSA_cat = pyfits.open('Downloads/nsa_v0_1_2.fits')
+    NSA_cat = pyfits.open('nsa_v0_1_2.fits')
 
     table = NSA_cat[1].data
 
@@ -176,33 +176,38 @@ def whirc_hist():
     stellar_mass = [mass[line] for line in locs]
     nsa_rar = [nsa_ba[line] for line in locs]
 
-    for line in range(len(nsa_rar)):
-        print nsa_rar[line]
-    '''
+    #for line in range(len(nsa_rar)):
+        #print nsa_rar[line]
+        
+    
     #PLOT SOME STUFF (JUST FROM GALITS, NOT FROM NSA CATALOG RIGHT NOW)
     f = plt.figure()
     ax = f.add_subplot(111)
 
-    plt.plot(Jre_arcsec, Jind, 'o', color = 'blue', label = 'WHIRC J Filter')
-    plt.plot(Kre_arcsec, Kind, 'o', color = 'gray', label = 'WHIRC K Filter')
+    plt.plot(Jre_arcsec, Jind, 'o', color = 'black', label = 'Infrared (WHIRC)',
+            markersize = 8)
+    plt.plot(Kre_arcsec, Kind, 'o', color = 'black', markersize = 8)
     #plt.plot(r50s, sersic_ns, 'o', color = 'green', label = 'NSA catalog')
-    plt.plot(Rre_arcsec, Rind, 'o', color = 'red', label = 'SDSS r-band GALFIT')
-    plt.xlabel('$R_e$ (arcsec)')
-    plt.ylabel('Sersic n')
-    plt.title('SDSS / WHIRC comparison')
+    plt.plot(Rre_arcsec, Rind, 'o', color = 'red', label = 'Optical (SDSS)',
+             markersize = 8)
+    plt.xlabel('Effective Radius (arcsec)', fontsize = 14)
+    plt.ylabel('Sersic Profile Steepness', fontsize = 14)
+    plt.title('SDSS / WHIRC comparison', fontsize = 20)
+    ax.set_xlim([0,5.33])
     ax.legend()
-    plt.savefig('Calibs/pics/sersic_fit.png')
+    savefig('Whirc_vs_sdss.png', bbox_inches = 'tight')
     
+    '''
     g = plt.figure()
     ax = g.add_subplot(111)
-    plt.plot(Rmag, Rar, 'o', color = 'red', label = 'SDSS r-band GALFIT')
-    plt.plot(Jmag, Jar, 'o', color = 'blue', label = 'WHIRC J Filter')
-    plt.plot(Kmag, Kar, 'o', color = 'gray', label = 'WHIRC K Filter')
+    plt.plot(Rmag, Rar, 'o', color = 'red', label = 'SDSS Optical Fit')
+    plt.plot(Jmag, Jar, 'o', color = 'gray', label = 'WHIRC Infrared Fit')
+    plt.plot(Kmag, Kar, 'o', color = 'gray', label = 'WHIRC Infrared Fit')
     plt.xlabel('Magnitude')
     plt.ylabel('Axis ration (b/a)')
     plt.title('SDSS / WHRIC comparison')
     ax.legend(loc = 4, fontsize = 11)
-    plt.savefig('Calibs/pics/mag_fit.png')
-    '''
+    plt.savefig('Calibs/pics/mag_fit.png')'''
+    
     
     

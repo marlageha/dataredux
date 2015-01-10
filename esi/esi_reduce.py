@@ -152,13 +152,11 @@ def esi_reduce():
     
     names = []
     for line in range(len(alldata)):
-        if "Object" in alldata[line][3] and float(alldata[line][6]) > 600 or "Line" in alldata[line][3]:
+        if "Object" in alldata[line][3] and float(alldata[line][6]) > 600:
             names.append(alldata[line][2])
     objects = np.array(list(set(names)))
     objects.sort() #ascending order, modify in place 
     
-
-
     for obj_id in objects:
 
         print "making variance for " + str(obj_id) + '...'
@@ -180,6 +178,8 @@ def esi_reduce():
         all_var = []
         for line in range(len(obj_locs)):
             im = pyfits.getdata(obj_locs[line])[:, 25:2070]
+            mask = bias > im #to avoid taking sqrt(negative)
+            im = im - bias
     
             rn = np.zeros((4096, 2045))
             #make gain mask: 
@@ -214,12 +214,23 @@ def esi_reduce():
     
             poisson[left_mask] = np.sqrt(im[left_mask]/left_gain)
             poisson[right_mask] = np.sqrt(im[right_mask]/right_gain)
+            poisson[mask] = np.median(poisson)
     
             noise = np.sqrt(rn**2+poisson**2)
+            noise = noise/flat
     
-            variance = 1/noise**2
-    
+            #variance = 1/noise**2
+            
+            #noise = (noise - bias)/flat
+            #noise[background_mask] = 0
+            all_var.append(noise)
             #write to file
-            fits = pyfits.PrimaryHDU(variance)
-            fits.writeto('Calibs/variance/'+str(obj_id)+'_'+str(line + 1)+'_var.fits', clobber = True)
+            #fits = pyfits.PrimaryHDU(variance)
+            #fits.writeto('Calibs/variance/'+str(obj_id)+'_'+str(line + 1)+'_var.fits', clobber = True)
+            
+        #Combine variance images for each object
+        tot_noise = np.sqrt(np.sum([(siggma/len(all_var))**2 for siggma in all_var], axis = 0))
+        fits = pyfits.PrimaryHDU(tot_noise)
+        fits.writeto('Calibs/variance/'+str(obj_id)+'_noise.fits', clobber = True)
+    
     

@@ -376,7 +376,7 @@ def whirc_shiftcalc(obj_id):
         center = centrals[0]
         
         # READ IN AND INITIALIZE DISTANCE MINIMIZATION
-        star_coords = pickle.load(open( "Calibs/starfields/star_coords"+str(obj_id)+'KN1.p', 'rb'))
+        star_coords = pickle.load(open("Calibs/starfields/star_coords"+str(obj_id)+'KN1.p', 'rb'))
         
         ref_im = star_coords[center]
         

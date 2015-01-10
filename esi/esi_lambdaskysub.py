@@ -76,9 +76,11 @@ def esi_lambdaskysub():
         print "sky subtracting " +str(obj_id)
         
         lamp = pyfits.getdata('Calibs/reduced/' + str(obj_id) + '_mean.fits')
+        noise = pyfits.getdata('Calibs/variance/'+str(obj_id)+'_noise.fits')
     
         #to hold skysubtracked image
         blanc = np.zeros((4096, 2045))
+        blanc_error = np.zeros((4096, 2045))
     
         #loop through orders
         for num in range(10):
@@ -88,6 +90,9 @@ def esi_lambdaskysub():
         
             heights = lamp[all_order_mask[num]]
             sky_heights = lamp[sky_mask[num]]
+            
+            error_heights = noise[all_order_mask[num]]
+            skyerror_heights = noise[sky_mask[num]]
             
             if 0 < num < 3:
     
@@ -157,15 +162,28 @@ def esi_lambdaskysub():
             sp = LSQUnivariateSpline(sky_lambdas, sky_heights, k=3, t = cont_knots)
             bsp = LSQUnivariateSpline(sky_lambdas, sky_heights, k=deg, t = line_knots)
             
+            sp_error = LSQUnivariateSpline(sky_lambdas, skyerror_heights, k=3, t = cont_knots)
+            bsp_error = LSQUnivariateSpline(sky_lambdas, skyerror_heights, k=deg, t = line_knots)
+            
             skei = sp(lambdas)
+            skei_error = sp_error(lambdas)
+            
             skei[tot_mask] = bsp(lambdas)[tot_mask]
+            skei_error[tot_mask] = bsp_error(lambdas)[tot_mask]
+            
             corrected = heights - skei
+            corrected_error = np.sqrt(error_heights**2 + skei_error**2)
 
             blanc[all_order_mask[num]] = corrected
+            blanc_error[all_order_mask[num]] = corrected_error
             #End order loop
             
         blanc[background] = lamp[background]
+        blanc_error[background] = noise[background]
         
         fits = pyfits.PrimaryHDU(blanc)
         fits.writeto('Calibs/sky_sub/'+str(obj_id)+'_skysub.fits', clobber = "True")
+        
+        fits = pyfits.PrimaryHDU(blanc_error)
+        fits.writeto('Calibs/variance/'+str(obj_id)+'_noise.fits', clobber = "True")
         
