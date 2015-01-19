@@ -1,3 +1,4 @@
+from esi_compress import esi_compress
 from esi_cosmic import esi_cosmic
 from esi_gauss import esi_gauss 
 from esi_lambda import esi_lambda
@@ -14,5 +15,6 @@ from esi_traceflat import esi_traceflat
 
 __all__ = ['esi_setup','esi_mkbias','esi_mkflat','esi_traceflat',
            'esi_reduce', 'esi_cosmic', 'esi_roughpeaks', 'esi_lambda',
-           'esi_skysub', 'esi_solution2d', 'esi_gauss', 'esi_lambdaskysub']
+           'esi_skysub', 'esi_solution2d', 'esi_gauss', 'esi_lambdaskysub',
+           'esi_compress']
 

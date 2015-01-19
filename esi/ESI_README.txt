@@ -46,10 +46,11 @@
    Write wavelength solutions and good lines to lambda_solutions.p
    >> esi.esi_lambda()
 
+###
 10) In Calibs, make directory Calibs/sky_sub. Using masks made in esi_traceflat(), 
     measure sky values at edges of orders and subtract. Only very rough at the moment.
     Write (roughly) sky-subtracted stuff to Calibs/sky_sub.
-    >> esi.esi_skysub()
+    >> esi.esi_skysub() ###
 
 11) Fit a gaussian to each peak in the lamps and record its center, which is more
     accurate than the estimate from esi_roughpeaks(). Compare to rough line lists
@@ -65,3 +66,17 @@
     surface. Write the polynomial solutions to Calibs/solution2d.p
     >> esi.esi_solution2d()
 
+13) Subtract the sky (defined in esi_traceflat() as pixels 3 - 15 on either side
+    of the orders) from the entire order. Fit a 1d sky I(lambda) to the sky pixels
+    as a spline. Apply spline to all pixels and subtracts sky. 
+    Write to Calibs/sky_sub/objid_skysub.fits     
+    >> esi.esi_lambdaskysub()
+
+14) Collapse each 2d order into a 1d spectrum using the wavelength solution. 
+    Use the np.interp() function to combine each of the orders into a single 
+    spectrum. Weight each order according to its polynomial fit in regions of 
+    overlap. Propagate error through full reduction process. Write spectra 
+    and signal-to-noise to directories in Final/.
+    >> esi.esi_compress()
+
+TODO: Tarball instead of making all the directories?
