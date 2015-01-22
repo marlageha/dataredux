@@ -1,16 +1,14 @@
-#! /usr/bin/python
 ##################################################
 #  ESI_setup
 #
 #  READ FITS HEADERS, CREATE SUMMARY FITS TABLE
+#  Runs separately for each date batch. Date should be name of directory
+#  e.g, esi.esi_setup('Jan_2015')
 #  >> mkdir Raw/
-#  >> mkdir Calibs/ Final/
-#  >
-#  > import mgesi
-#  > mgesi.esi_setup() 
-#
-#
-#  MG 4/14
+#  >> mkdir Calibs/ Final/ Logs/
+#  
+#  Kareem El-Badry
+#  07/25/2014
 ##################################################
 
 import pyfits
@@ -18,8 +16,9 @@ from pyfits import Column
 import numpy as np
 import os
 
-def esi_setup():
+def esi_setup(date):
 
+    print "setting up table for " + str(date) + "... must manually edit later"
     # DEFINE HEADER INFO TO SAVE
     filename = []
     dateobs=[]
@@ -31,11 +30,11 @@ def esi_setup():
     e2=np.zeros(1)
 
     # READ ALL FILES IN /RAW
-    for file in os.listdir(os.getcwd()+'/Raw'):
+    for file in os.listdir(os.getcwd()+'/'+str(date)+'/Raw'):
 
         # IF FILENAME ENDS WITH .gz, READ AND PARSE HEADERS
         if file.endswith('.gz'):
-            hdr = pyfits.getheader('Raw/'+file)
+            hdr = pyfits.getheader(str(date)+'/Raw/'+file)
             filename.append(file)
             dateobs.append(hdr['DATE-OBS'])
             objname.append(hdr['OBJECT'])
@@ -77,10 +76,10 @@ def esi_setup():
 
     # WRITE TO DIRECTORY
     esi = pyfits.new_table([c1, c2, c3, c4, c5, c6, c7])
-    esi.writeto('Logs/esi_data.fits',clobber=True)
+    esi.writeto(str(date)+'/Logs/esi_data_'+str(date)+'.fits', clobber=True)
     
     #NOW WRITE TO MORE EASILY EDITABLE DATA FILE
-    hdulist = pyfits.open('Logs/esi_data.fits')
+    hdulist = pyfits.open(str(date)+'/Logs/esi_data_'+str(date)+'.fits')
     table = hdulist[1].data
     
     #Define Columns
@@ -102,9 +101,17 @@ def esi_setup():
         dec.append(table[line][5])
         exptime.append(table[line][6])
         
+        #remove spaces from names
+        if ' ' in str(objname[line]):
+            objname[line] = objname[line].replace(" ", "")
+            
+            
+        
     print "Columns: filename|dateobs|objname|imgtype|ra|dec|exptime|yes/no"
     
-    file = open('Logs/esi_info.dat','w')
+    file = open(str(date)+'/Logs/esi_info_'+str(date)+'.dat','w')
+    
+    
     for line in range(len(filename)):
         file.write(" ".join([str(filename[line]), str(dateobs[line]), str(objname[line]), 
         str(imgtype[line]),str(ra[line]),str(dec[line]),str(exptime[line]),"yes",'\n']))

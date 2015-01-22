@@ -1,16 +1,16 @@
-#! /usr/bin/python
 ##################################################
 #  ESI_mkbias
 #
 #  USING ESI SUMMARY TABLE, COADD ALL BIAS FRAMES
 #  WRITE TO FILE bias.fits
-#  MG 4/14
+#  Kareem El-Badry
+#  07/25/2014
 ##################################################
 
 import pyfits
 import numpy as np
 
-def esi_mkbias():
+def esi_mkbias(date):
     '''    
     ##THIS PART FIXED TO WORK OFF UPDATED LOG; SOME 'IMGTYPE = ZERO' FILES ARE NOT BIAS##
 	# READ DATA SUMMARY
@@ -23,7 +23,7 @@ def esi_mkbias():
 	print 'Number of Bias to combine = ' + str(len(biasfile))
     '''
 
-    im1 = open('Logs/esi_info.dat','r')
+    im1 = open(str(date)+'/Logs/esi_info_'+str(date)+'.dat','r')
     data1 = im1.readlines()
     im1.close()
     
@@ -72,7 +72,7 @@ def esi_mkbias():
     #Find path to bias
     biaspath = []
     for line in range(len(bias)):
-        biaspath.append("Raw/"+str(bias[line][0]))
+        biaspath.append(str(date)+"/Raw/"+str(bias[line][0]))
         
     
 	# FOR EACH FILENAME, READ IMAGE AND ADD TO ARRAY
@@ -87,6 +87,6 @@ def esi_mkbias():
 
     # WRITE TO DIRECTORY
     fits = pyfits.PrimaryHDU(bias)
-    fits.writeto('Calibs/bias.fits',clobber=True)
+    fits.writeto(str(date)+'/Calibs/bias_'+str(date)+'.fits',clobber=True)
 
 

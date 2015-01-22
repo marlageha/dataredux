@@ -1,34 +1,40 @@
-1) Make directory ESI. Inside ESI, make directories Raw/, Calibs/, Final/, Logs/.
+1) Make directory ESI. Inside ESI/, make a directory for a batch of files. E.g.
+   mkdir ESI/Jan_2015
+   Inside batch directory, make directories Raw/, Calibs/, Final/, Logs/.
+   e.g., mkdir ESI/Jan_2015/Raw
 
-   Inside Calibs/, make directory pics/.  Move data to Raw/. Extract data from headers
-   in Python,
+   Move data to Raw/. Extract data from headers by running in Python,
    >> import esi
-   >> esi.esi_setup()
+   >> esi.esi_setup(date) where “date” is a string with the name of the directory
+       			  containing Raw/, Calibs/, Final/
+   e.g,
+   >> esi.esi_setup(‘Jan_2015’)
 
-2) Cross-check logs from headers. I've already done this and saved the results in 
+2) Cross-check logs from headers with logs and the actual data. This is the time
+   to mark any bad data to be thrown out. If data is bad, change rightmost column 
+   in that line from “yes” to “no”. I’ve already done this and saved the results in 
    esi_info.dat. Move esi_info.dat to Logs/ (from GitHub) AFTER running esi_setup.
    (Otherwise running esi_setup() will overwrite it with something less useful). 
-   This tells which files are bad.
 
 3) Find bias files from esi_info and median combine. Write bias.fits to Calibs/.
-   >> esi.esi_mkbias()
+   >> esi.esi_mkbias(date)
 
 4) Find flats from esi_info and median combine. Write dome_flat.fits and
    pinhole_flat.fits to Calibs/.
-   >> esi.esi_mkflats()
+   >> esi.esi_mkflats(date)
 
 5) From flat, find orders and fit a polynomial to them. (This also requires the esi 
    module esi_trace_cen() to be in the pythonpath directory). Normalize each order 
    by dividing it by its polynomial. Write Calibs/norm_flat.fits. Create masks for
    the orders and the background; write orders_mask.p and background_mask.p to 
    Calibs/.  
-   >> esi.esi_traceflat()
+   >> esi.esi_traceflat(date)
 
-6) Make a directory Calibs/cosmicless. From http://obswww.unige.ch/~tewes/cosmics_dot_py/,
+6) From http://obswww.unige.ch/~tewes/cosmics_dot_py/,
    (or just from the git_hub repository), download cosmics.py and save it to the 
    directory of your PYTHONPATH variable in .bash_profile. Remove cosmic rays from each 
    of the raw science images and the lamps. Write each file to Calibs/cosmicless.
-   >> esi.esi_cosmic()
+   >> esi.esi_cosmic(date)
 
 7) In Calibs, make directories reduced/ and variance/. Read in the spectra from
    each object and average with rejection. Write each one to Calibs/reduced/objid_med.fits.
@@ -79,4 +85,7 @@
     and signal-to-noise to directories in Final/.
     >> esi.esi_compress()
 
-TODO: Tarball instead of making all the directories?
+TODO: Tarball instead of making all the directories? Try 
+
+if not os.path.exists(directory):
+    os.makedirs(directory)

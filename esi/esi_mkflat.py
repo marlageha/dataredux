@@ -5,20 +5,20 @@
 #  USING ESI SUMMARY TABLE, COADD ALL DOME FLAT FRAMES
 #  SUBTRACT BIAS AND NORMALIZE
 #  WRITE TO FILE flat.fits
-#  MG 4/14
+#  Kareem El-Badry 07/25/2014
 ##################################################
 
 import pyfits
 import numpy as np
 
-def esi_mkflat():
+def esi_mkflat(date):
     
 
     # READ BIAS FRAME
-    bias = pyfits.getdata('Calibs/bias.fits')
+    bias = pyfits.getdata(str(date)+'/Calibs/bias_'+str(date)+'.fits')
     
     #READ LOG
-    im1 = open('Logs/esi_info.dat','r')
+    im1 = open(str(date)+'/Logs/esi_info_'+str(date)+'.dat','r')
     data1 = im1.readlines()
     im1.close()
     
@@ -69,40 +69,46 @@ def esi_mkflat():
     for line in range(len(good)):
         if "DmFlat" in good[line][3] and "Pinhole" in good[line][2]:
             pflat.append(good[line])
-    print 'Number of pinhole flats to combine = ' + str(len(pflat))
+    print 'Number of pinhole flats to combine = ' + str(len(pflat)) + '\n'
             
     #Find path to domeflats
     domepath = []
     for line in range(len(dflat)):
-        domepath.append("Raw/"+str(dflat[line][0]))
+        domepath.append(str(date)+"/Raw/"+str(dflat[line][0]))
     
     #Find path to pinflats
-    pinpath = ["Raw/"+str(pflat[line][0]) for line in range(len(pflat))]
+    pinpath = [str(date)+"/Raw/"+str(pflat[line][0]) for line in range(len(pflat))]
     
 	# FOR EACH FILENAME, READ IMAGE AND ADD TO ARRAY
+    print "flat cube shape | flat slice median   (if medians very different, consider getting rid of those flats)"
     alldflat=[]
     for i in domepath:    
         im = pyfits.getdata(i)
-        im = (im - bias)/np.median(im - bias) #normalize 
-        alldflat.append(im)
+        im_med = (im - bias)/np.median(im - bias) #normalize 
+        alldflat.append(im_med)
         print np.shape(alldflat),np.median(im)
     
     allpflat=[]
     for i in pinpath:    
         im = pyfits.getdata(i)
-        im = (im - bias)/np.median(im - bias) #normalize 
-        allpflat.append(im)
+        im_med = (im - bias)/np.median(im - bias) #normalize 
+        allpflat.append(im_med)
         print np.shape(allpflat),np.median(im)
 
     # MEDIAN COMBINE
-    dome_flat = np.median(alldflat, axis=0)
-    pin_flat = np.median(allpflat, axis=0)
+    if len(alldflat) > 0:
+        dome_flat = np.median(alldflat, axis=0)
+        
+        # WRITE TO DIRECTORY
+        dfits = pyfits.PrimaryHDU(dome_flat[:, 25:2070])   # TRIM FLAT FIELD!!
+        dfits.writeto(str(date)+'/Calibs/dome_flat_'+str(date)+'.fits', clobber=True)
+        
+    if len(allpflat) > 0:
+        pin_flat = np.median(allpflat, axis=0)
 
-    # WRITE TO DIRECTORY
-    dfits = pyfits.PrimaryHDU(dome_flat[:, 25:2070])   # TRIM FLAT FIELD!!
-    dfits.writeto('Calibs/dome_flat.fits',clobber=True)
+        pfits = pyfits.PrimaryHDU(pin_flat[:, 25:2070])
+        pfits.writeto(str(date)+'/Calibs/pinhole_flat_'+str(date)+'.fits', clobber=True)
+
     
-    pfits = pyfits.PrimaryHDU(pin_flat[:, 25:2070])
-    pfits.writeto('Calibs/pinhole_flat.fits')
 
 

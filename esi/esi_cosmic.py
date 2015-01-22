@@ -1,35 +1,44 @@
-#######################################################################
-#       Reads in all Raw Science and Lamps                            #
-#       Uses LA Cosmics (van Dokkum)                                  #
-#       Before running, save cosmics.py in PYTHONPATH directory       #
-#       Make directory Calibs/cosmicless; this writes to that         #
-#       Runs in about an hour for ~100 images                         #
-#       Kareem El-Badry, 07/10/2014                                   #
-#######################################################################
+##############################################################################
+#                                                                            #
+#       Reads in all Raw Science and Lamps                                   #
+#       Uses LA Cosmics (van Dokkum)                                         #
+#       All credit goes to Pieter van Dokkum for writing the original        #
+#       IRAF script and Malte Tewes for translating it to Python             #
+#       Before running, save cosmics.py in PYTHONPATH directory              #
+#       Makes directory Calibs/cosmicless; this writes to there              #
+#       Runs in about 2 minutes per image. Can take a while.                 #
+#       Kareem El-Badry, 07/10/2014                                          #
+#                                                                            #
+##############################################################################
 
 
 from __future__ import division
 import cosmics
-import matplotlib.pyplot as plt
+import gzip
 import numpy as np
+import os
 import pickle
 import pyfits
 import scipy
 
-def esi_cosmic():
+
+def esi_cosmic(date):
+    
+    if not os.path.exists(str(date)+'/Calibs/cosmicless/'):
+        os.makedirs(str(date)+'/Calibs/cosmicless/')
 
     #Get edge masks from file
-    orders_mask = pickle.load(open('Calibs/orders_mask.p', 'rb'))
-    background_mask = pickle.load(open('Calibs/background_mask.p', 'rb'))
+    orders_mask = pickle.load(open(str(date)+'/Calibs/orders_mask_'+str(date)+'.p', 'rb'))
+    background_mask = pickle.load(open(str(date)+'/Calibs/background_mask_'+str(date)+'.p', 'rb'))
 
     #Bias
-    bias = pyfits.getdata('Calibs/bias.fits')
+    bias = pyfits.getdata(str(date)+'/Calibs/bias_'+str(date)+'.fits')
 
     #Normalized Flat
-    flat = pyfits.getdata('Calibs/norm_flat.fits')
+    flat = pyfits.getdata(str(date)+'/Calibs/norm_flat_'+str(date)+'.fits')
 
     #READ LOG
-    im1 = open('Logs/esi_info.dat','r')
+    im1 = open(str(date)+'/Logs/esi_info_'+str(date)+'.dat','r')
     data1 = im1.readlines()
     im1.close()
 
@@ -66,15 +75,51 @@ def esi_cosmic():
        if "yes" in alldata[line][ 7]:
            good.append(alldata[line])
        
-    #Find list of objects and lines:
+    #Find list of objects:
     names = []
     for line in range(len(alldata)):
-        if "Object" in alldata[line][3] and float(alldata[line][6]) > 600 or "Line" in alldata[line][3]:
+        if "Object" in alldata[line][3] and float(alldata[line][6]) > 600:
             names.append(alldata[line][2])
     objects = np.array(list(set(names)))
     objects.sort() #ascending order, modify in place 
+    
+    #Find list of lines
+    names = []
+    for line in range(len(alldata)):
+        if "Line" in alldata[line][3]:
+            names.append(alldata[line][2])
+    lines = np.array(list(set(names)))
+    lines.sort() #ascending order, modify in place
 
-    #Remove cosmics from each objects/lamp
+    #Remove cosmics from each lamp
+    for obj_id in lines:
+        print "reducing " + str(obj_id) + '...'
+    
+        #Find files related to this object
+        aobj_id = []
+        for line in range(len(good)):
+            if str(obj_id) in good[line][2]:
+                aobj_id.append(good[line])
+        print str(len(aobj_id)), "files for "+ str(obj_id)
+    
+        #Write path to each objects files:
+        obj_locs = [str(date)+'/Raw/' + str(aobj_id[line][0]) for line in range(len(aobj_id))]
+    
+        #Read in and de-cosmify
+        for line in range(len(obj_locs)):
+        
+            array, header = cosmics.fromfits(obj_locs[line])
+            #array = array - bias #backwards for some reason
+            c = cosmics.cosmicsimage(array, gain = 1.29, readnoise = 2.2, sigclip = 6, objlim = 5.0, sigfrac = 0.7, satlevel = 1e4)
+            c.run(maxiter = 3) # can increase up to 4 to improve precision, but takes longer
+            cosmics.tofits(str(date)+'/Calibs/cosmicless/' + str(obj_id)+'_'+str(line+1)+'decos.fits', c.cleanarray, header)
+            
+            #now zip it (to save space)
+            f = pyfits.getdata(str(date)+'/Calibs/cosmicless/' + str(obj_id)+'_'+str(line+1)+'decos.fits')
+            hdu = pyfits.CompImageHDU(f)
+            hdu.writeto(str(date)+'/Calibs/cosmicless/' + str(obj_id)+'_'+str(line+1)+'decos.fits', clobber=True)
+
+    #Remove cosmics from each object
     for obj_id in objects:
         print "reducing " + str(obj_id) + '...'
     
@@ -86,7 +131,7 @@ def esi_cosmic():
         print str(len(aobj_id)), "files for "+ str(obj_id)
     
         #Write path to each objects files:
-        obj_locs = ['Raw/' + str(aobj_id[line][0]) for line in range(len(aobj_id))]
+        obj_locs = [str(date)+'/Raw/' + str(aobj_id[line][0]) for line in range(len(aobj_id))]
     
         #Read in and de-cosmify
         for line in range(len(obj_locs)):
@@ -95,4 +140,10 @@ def esi_cosmic():
             #array = array - bias #backwards for some reason
             c = cosmics.cosmicsimage(array, gain = 1.29, readnoise = 2.2, sigclip = 3.8, objlim = 3.0, sigfrac = 0.7, satlevel = -1)
             c.run(maxiter = 3) # can increase up to 4 to improve precision, but takes longer
-            cosmics.tofits('Calibs/cosmicless/' + str(obj_id)+'_'+str(line+1)+'decos.fits', c.cleanarray, header)
+            cosmics.tofits(str(date)+'/Calibs/cosmicless/' + str(obj_id)+'_'+str(line+1)+'decos.fits', c.cleanarray, header)
+            
+            #now zip it (to save space)
+            f = pyfits.getdata(str(date)+'/Calibs/cosmicless/' + str(obj_id)+'_'+str(line+1)+'decos.fits')
+            hdu = pyfits.CompImageHDU(f)
+            hdu.writeto(str(date)+'/Calibs/cosmicless/' + str(obj_id)+'_'+str(line+1)+'decos.fits', clobber=True)
+            

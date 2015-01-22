@@ -1,10 +1,9 @@
-#! /usr/bin/python
 ##################################################
 #  ESI_trace_cen
 #
 #  USING FLAT FIELD, FIND X/Y FOR ORDER EDGES  
 #
-#  MG 4/14
+#  Kareem El-Badry, 07/25/2014
 ##################################################
 
 
@@ -14,11 +13,10 @@ import numpy as np
 from scipy import ndimage
 import pdb
 
-def esi_trace_cen():
+def esi_trace_cen(date):
 
     # READ FLAT FRAME
-
-    ffile = pyfits.open('Calibs/dome_flat.fits')
+    ffile = pyfits.open(str(date)+'/Calibs/dome_flat_'+str(date)+'.fits')
     flat = ffile[0].data
 
     # SMOOTH FLAT SLIGHTLY
