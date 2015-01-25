@@ -12,24 +12,23 @@
 #                                                        #
 #       Kareem El-Badry, 07/14/2014                      #
 ##########################################################
-
-import matplotlib.pyplot as plt
+from __future__ import division
 import numpy as np
+import os
 import pickle
 import pyfits
 import scipy
 from scipy.ndimage.filters import gaussian_filter1d
 
-def esi_roughpeaks():
+def esi_roughpeaks(date):
     
     #Get edge masks from file
     print 'loading masks...'
-    orders_mask = pickle.load(open('Calibs/orders_mask.p', 'rb'))
-    background_mask = pickle.load(open('Calibs/background_mask.p', 'rb')) 
-    all_order_mask = pickle.load(open('Calibs/all_order_masks.p', 'rb'))
+    orders_mask = pickle.load(open(str(date)+'/Calibs/orders_mask_'+str(date)+'.p', 'rb'))
+    all_order_mask = pickle.load(open(str(date)+'/Calibs/all_order_masks_'+str(date)+'.p', 'rb'))
     
     #get names of lamps, first read in log:
-    im1 = open('Logs/esi_info.dat','r')
+    im1 = open(str(date)+'/Logs/esi_info_'+str(date)+'.dat','r')
     data1 = im1.readlines()
     im1.close()
 
@@ -80,7 +79,7 @@ def esi_roughpeaks():
         print "reducing " + str(obj_id) + '...'
         
         #load file
-        lamp = pyfits.getdata('Calibs/reduced/' + str(obj_id) + '_mean.fits')
+        lamp = pyfits.getdata(str(date)+'/Calibs/reduced/' + str(obj_id) + '_mean.fits')
         
         pickle_obj = []
         #loop through orders:
@@ -124,7 +123,7 @@ def esi_roughpeaks():
             smooted = gaussian_filter1d(ord_tot, 1.5)
             deriv = scipy.ndimage.sobel(smooted)#mayber deriv of smoothed?
             
-            #find local maxes
+            #find local maxes. Could also just use the scipy max finder, but this is faster. 
             mask = np.r_[True, smoothed[1:] > smoothed[:-1]] & np.r_[smoothed[:-1] > smoothed[1:], True]
             xcenr = np.arange(4096)[mask]
             mcenr = smoothed[mask]
@@ -171,8 +170,12 @@ def esi_roughpeaks():
             #for entire lamp
             pickle_obj.append(pickle_order)
             
+        #Make directory to hold decosmicified files
+        if not os.path.exists(str(date)+'/Calibs/lamp_peaks/'):
+            os.makedirs(str(date)+'/Calibs/lamp_peaks/')
+            
         #write to file
-        pickle.dump(pickle_obj, open('Calibs/lamp_peaks/'+ str(obj_id) + '_roughpeaks.p', 'wb'))
+        pickle.dump(pickle_obj, open(str(date) + '/Calibs/lamp_peaks/'+ str(obj_id) + '_roughpeaks_'+str(date)+'.p', 'wb'))
         
             
             

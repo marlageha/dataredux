@@ -40,7 +40,7 @@
    each object and average with rejection. Write each one to Calibs/reduced/objid_med.fits.
    Do the same for lamps. Make a variance image for each science image whose pixels
    are 1/(sigma)^2. Write to Calibs/variance/. 
-   >> esi.esi_reduce() 
+   >> esi.esi_reduce(date) 
 
 8) In Calibs, make directory Calibs/lamp_peaks. Read in spectra from each object, 
    sum over x coordiates in each order, and find the peaks (to +/- 1 pixel) in 

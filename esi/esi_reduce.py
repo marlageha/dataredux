@@ -8,30 +8,29 @@
 #       Kareem El-Badry, 07/10/2014                  #
 ######################################################
 
-
 from __future__ import division
 from astropy.stats import sigma_clip
-import matplotlib.pyplot as plt
 import numpy as np
+import os
 import pickle
 import pyfits
 import scipy.ndimage 
 import pdb
 
-def esi_reduce():
+def esi_reduce(date):
 
     #Get edge masks from file
-    orders_mask = pickle.load(open('Calibs/orders_mask.p', 'rb'))
-    background_mask = pickle.load(open('Calibs/background_mask.p', 'rb'))
+    orders_mask = pickle.load(open(str(date)+'/Calibs/orders_mask_'+str(date)+'.p', 'rb'))
+    background_mask = pickle.load(open(str(date)+'/Calibs/background_mask_'+str(date)+'.p', 'rb'))
 
     #Bias
-    bias = pyfits.getdata('Calibs/bias.fits')[:, 25:2070]
+    bias = pyfits.getdata(str(date)+'/Calibs/bias_'+str(date)+'.fits')[:, 25:2070]
 
     #Normalized Flat
-    flat = pyfits.getdata('Calibs/norm_flat.fits')
+    flat = pyfits.getdata(str(date)+'/Calibs/norm_flat_'+str(date)+'.fits')
 
     #READ LOG
-    im1 = open('Logs/esi_info.dat','r')
+    im1 = open(str(date)+'/Logs/esi_info_'+str(date)+'.dat','r')
     data1 = im1.readlines()
     im1.close()
 
@@ -71,10 +70,14 @@ def esi_reduce():
     #Find list of objects 
     names = []
     for line in range(len(alldata)):
-        if "Object" in alldata[line][3] and float(alldata[line][6]) > 600:
+        if ("Object" in alldata[line][3] and float(alldata[line][6]) > 600):
             names.append(alldata[line][2])
     objects = np.array(list(set(names)))
     objects.sort() #ascending order, modify in place 
+    
+    #Make directory to hold decosmicified files
+    if not os.path.exists(str(date)+'/Calibs/reduced/'):
+        os.makedirs(str(date)+'/Calibs/reduced/')
 
     #Reduce for each object 
     for obj_id in objects:
@@ -86,10 +89,13 @@ def esi_reduce():
         for line in range(len(good)):
             if str(obj_id) in good[line][2]:
                 aobj_id.append(good[line])
-        print str(len(aobj_id)),"files for " + str(obj_id)
+        print str(len(aobj_id)), "files for " + str(obj_id)
+        
+        if len(aobj_id) == 0:
+            continue
 
         #Write Path to each object's files
-        obj_locs = ['Calibs/cosmicless/' + str(obj_id) + '_' + str(line+1) + 
+        obj_locs = [str(date)+'/Calibs/cosmicless/' + str(obj_id) + '_' + str(line+1) + 
                     'decos.fits' for line in range(len(aobj_id))]
 
         #Read in Data
@@ -104,19 +110,22 @@ def esi_reduce():
         filtered = (filtered - bias)/flat
     
         mean = np.mean(filtered, axis = 0)
-        fits = pyfits.PrimaryHDU(mean.data)
-        fits.writeto('Calibs/reduced/'+str(obj_id)+'_mean.fits', clobber = True)
+        mean.data[background_mask] = 0
+        
+        hdu = pyfits.CompImageHDU(mean.data)
+        hdu.writeto(str(date)+'/Calibs/reduced/'+str(obj_id)+'_mean.fits', clobber = True)
         #pdb.set_trace()
 
     #Reduce lines
     names = []
     for line in range(len(alldata)):
-        if "Line" in alldata[line][3]:
+        if ("Line" in alldata[line][3]) or ("*" in alldata[line][2]):
             names.append(alldata[line][2])
     objects = np.array(list(set(names)))
     objects.sort() #ascending order, modify in place 
 
-    #Reduce for each line 
+
+    #Reduce for each line or star (because not decosmfied)
     for obj_id in objects:
 
         print "reducing " + str(obj_id) + '...'
@@ -127,9 +136,12 @@ def esi_reduce():
             if str(obj_id) in good[line][2]:
                 aobj_id.append(good[line])
         print str(len(aobj_id)),"files for " + str(obj_id)
+        
+        if len(aobj_id) == 0:
+            continue
 
         #Write Path to each object's files
-        obj_locs = ['Raw/' + str(aobj_id[line][0]) for line in range(len(aobj_id))]
+        obj_locs = [str(date) + '/Raw/' + str(aobj_id[line][0]) for line in range(len(aobj_id))]
 
         #Read in Data
         all_sci = []
@@ -139,20 +151,17 @@ def esi_reduce():
             all_sci.append(sci)
         
         #median, not mean, for lines
-        mean = np.median(all_sci, axis = 0)    
-    
-        fits = pyfits.PrimaryHDU(mean)
-        fits.writeto('Calibs/reduced/'+str(obj_id)+'_mean.fits', clobber = True)
-
+        mean = np.median(all_sci, axis = 0)
+        mean[background_mask] = 0    
+        hdu = pyfits.CompImageHDU(mean)
+        hdu.writeto(str(date)+'/Calibs/reduced/'+str(obj_id)+'_mean.fits', clobber = True)
 
     #Make variance image for each science image:
     #The break in the amplifiers is at 1022-1023. Everything increases at 1023. 
-    #Find ALL objects
-    #Find list of objects 
     
     names = []
     for line in range(len(alldata)):
-        if "Object" in alldata[line][3] and float(alldata[line][6]) > 600:
+        if ("Object" in alldata[line][3] and float(alldata[line][6]) > 600) or ("*" in alldata[line][2]):
             names.append(alldata[line][2])
     objects = np.array(list(set(names)))
     objects.sort() #ascending order, modify in place 
@@ -167,9 +176,12 @@ def esi_reduce():
             if str(obj_id) in good[line][2]:
                 aobj_id.append(good[line])
         print str(len(aobj_id)),"files for " + str(obj_id)
+        
+        if len(aobj_id) == 0:
+            continue
 
         #Write Path to each object's files
-        obj_locs = ['Calibs/cosmicless/' + str(obj_id) + '_' + str(line+1) + 
+        obj_locs = [str(date)+'/Calibs/cosmicless/' + str(obj_id) + '_' + str(line+1) + 
                     'decos.fits' for line in range(len(aobj_id))]
 
         #CALCULATE EACH NOISE CONTRIBUTION SEPARATELY
@@ -190,10 +202,17 @@ def esi_reduce():
 
             #MAKE A READ NOISE FRAME
             #random bias image
-            rand_bias = pyfits.getdata('Raw/e140306_0012.fits.gz')[:, 25:2070]
-
+            
+            biases = []
+            for line in range(len(good)):
+                if "Bias" in good[line][3] and "Bias" in good[line][2]:
+                    biases.append(good[line])
+            rand_path = str(date)+'/Raw/'+str(biases[0][0]) #pick the first bias. 
+            rand_bias = pyfits.getdata(rand_path)[:, 25:2070]
+            
             read_noise = rand_bias - bias
-
+            
+            #Big enough square to be representative
             left_rn = np.std(read_noise[2000:2100, 920:1020])
             right_rn = np.std(read_noise[2000:2100, 1030:1130])
 
@@ -228,9 +247,14 @@ def esi_reduce():
             #fits = pyfits.PrimaryHDU(variance)
             #fits.writeto('Calibs/variance/'+str(obj_id)+'_'+str(line + 1)+'_var.fits', clobber = True)
             
+        #Make directory to hold decosmicified files
+        if not os.path.exists(str(date)+'/Calibs/variance/'):
+            os.makedirs(str(date)+'/Calibs/variance/')
+            
         #Combine variance images for each object
         tot_noise = np.sqrt(np.sum([(siggma/len(all_var))**2 for siggma in all_var], axis = 0))
-        fits = pyfits.PrimaryHDU(tot_noise)
-        fits.writeto('Calibs/variance/'+str(obj_id)+'_noise.fits', clobber = True)
+        tot_noise[background_mask] = 0
+        fits = pyfits.CompImageHDU(tot_noise)
+        fits.writeto(str(date)+'/Calibs/variance/'+str(obj_id)+'_noise.fits', clobber = True)
     
     
