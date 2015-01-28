@@ -12,20 +12,21 @@
 from __future__ import division
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 import pickle
 import pyfits
 from scipy.signal import argrelextrema
 from scipy.interpolate import LSQUnivariateSpline
 
-def esi_lambdaskysub():
+def esi_lambdaskysub(date):
     
     print "reading masks, wavelengths solutions..."
-    solutions2d = pickle.load(open('Calibs/solution2d.p', 'rb'))
-    all_order_mask = pickle.load(open('Calibs/all_order_masks.p', 'rb'))
-    sky_mask = pickle.load(open('Calibs/sky_mask.p', 'rb'))
-    background = pickle.load(open('Calibs/background_mask.p', 'rb'))
+    solutions2d = pickle.load(open(str(date)+'/Calibs/solution2d_'+str(date)+'.p', 'rb'))
+    all_order_mask = pickle.load(open(str(date)+'/Calibs/all_order_masks_'+str(date)+'.p', 'rb'))
+    sky_mask = pickle.load(open(str(date)+'/Calibs/sky_mask_'+str(date)+'.p', 'rb'))
+    background = pickle.load(open(str(date)+'/Calibs/background_mask_'+str(date)+'.p', 'rb'))
     
-    im1 = open('Logs/esi_info.dat','r')
+    im1 = open(str(date)+'/Logs/esi_info_'+str(date)+'.dat','r')
     data1 = im1.readlines()
     im1.close()
 
@@ -64,19 +65,24 @@ def esi_lambdaskysub():
 
     #Find list of lamps 
     names = []
-    for line in range(len(alldata)):
-        if "Object" in alldata[line][3] and float(alldata[line][6]) > 600:
-            names.append(alldata[line][2])
+    for line in range(len(good)):
+        if ("Object" in good[line][3] and float(good[line][6]) > 600) or ("*" in good[line][2]):
+            names.append(good[line][2])
 
     objects = np.array(list(set(names)))
     objects.sort() #ascending order, modify in place
+
+        
+    #Make directory to hold skysubbed files
+    if not os.path.exists(str(date)+'/Calibs/sky_sub/'):
+        os.makedirs(str(date)+'/Calibs/sky_sub/')
 
     for obj_id in objects:
         
         print "sky subtracting " +str(obj_id)
         
-        lamp = pyfits.getdata('Calibs/reduced/' + str(obj_id) + '_mean.fits')
-        noise = pyfits.getdata('Calibs/variance/'+str(obj_id)+'_noise.fits')
+        lamp = pyfits.getdata(str(date)+'/Calibs/reduced/' + str(obj_id) + '_mean.fits')
+        noise = pyfits.getdata(str(date)+'/Calibs/variance/'+str(obj_id)+'_noise.fits')
     
         #to hold skysubtracked image
         blanc = np.zeros((4096, 2045))
@@ -143,10 +149,10 @@ def esi_lambdaskysub():
             tot_mask = np.sum(masks, axis = 0, dtype = bool)
     
             if 9 > num > 6:
-                spaceing = 0.18
+                spaceing = 0.23
                 deg = 1
             elif num < 7:
-                spaceing = 0.13
+                spaceing = 0.23
                 deg = 1
             elif num > 8:
                 spaceing = 0.23
@@ -182,8 +188,8 @@ def esi_lambdaskysub():
         blanc_error[background] = noise[background]
         
         fits = pyfits.PrimaryHDU(blanc)
-        fits.writeto('Calibs/sky_sub/'+str(obj_id)+'_skysub.fits', clobber = "True")
+        fits.writeto(str(date)+'/Calibs/sky_sub/'+str(obj_id)+'_skysub.fits', clobber = "True")
         
         fits = pyfits.PrimaryHDU(blanc_error)
-        fits.writeto('Calibs/variance/'+str(obj_id)+'_noise.fits', clobber = "True")
+        fits.writeto(str(date)+'/Calibs/variance/'+str(obj_id)+'_noise.fits', clobber = "True")
         

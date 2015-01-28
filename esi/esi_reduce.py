@@ -156,6 +156,8 @@ def esi_reduce(date):
         hdu = pyfits.CompImageHDU(mean)
         hdu.writeto(str(date)+'/Calibs/reduced/'+str(obj_id)+'_mean.fits', clobber = True)
 
+
+
     #Make variance image for each science image:
     #The break in the amplifiers is at 1022-1023. Everything increases at 1023. 
     
@@ -254,6 +256,7 @@ def esi_reduce(date):
         #Combine variance images for each object
         tot_noise = np.sqrt(np.sum([(siggma/len(all_var))**2 for siggma in all_var], axis = 0))
         tot_noise[background_mask] = 0
+        
         fits = pyfits.CompImageHDU(tot_noise)
         fits.writeto(str(date)+'/Calibs/variance/'+str(obj_id)+'_noise.fits', clobber = True)
     

@@ -13,6 +13,8 @@
 #                                                                            #
 ##############################################################################
 
+
+# somewhat outdated version: esi_gaussian uses only HgNeXeCuAr
 from __future__ import division
 from astropy.modeling import models, fitting
 import matplotlib.pyplot as plt
@@ -21,16 +23,16 @@ import pickle
 import pyfits
 import scipy.ndimage 
 
-def esi_gauss():
+def esi_gauss(date):
     
     #Get edge masks from file
     print 'loading masks...'
-    orders_mask = pickle.load(open('Calibs/orders_mask.p', 'rb'))
-    background_mask = pickle.load(open('Calibs/background_mask.p', 'rb')) 
-    all_order_mask = pickle.load(open('Calibs/all_order_masks.p', 'rb'))
+    orders_mask = pickle.load(open(str(date)+'/Calibs/orders_mask_'+str(date)+'.p', 'rb'))
+    background_mask = pickle.load(open(str(date)+'/Calibs/background_mask_'+str(date)+'.p', 'rb')) 
+    all_order_mask = pickle.load(open(str(date)+'/Calibs/all_order_masks_'+str(date)+'.p', 'rb'))
 
     #get names of lamps, first read in log:
-    im1 = open('Logs/esi_info.dat','r')
+    im1 = open(str(date)+'/Logs/esi_info_'+str(date)+'.dat','r')
     data1 = im1.readlines()
     im1.close()
 

@@ -63,7 +63,7 @@
     and only keep the ones that we've already found and know the actual wavelengths 
     of. Write improved line lists to Calibs/line_lists/order_lists/pixels/better_
     order[obj_id].dat. 
-    >> esi.esi_gauss()
+    >> esi.esi_gauss() TODO: Make this first?
 
 12) Fit a 2-dimensional wavelength solution to each order. Break each order into
     ~15 columns that are 10 pixels wide. Find all the peaks in each column, so we
