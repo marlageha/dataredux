@@ -181,7 +181,7 @@ def esi_2dsolution(date):
     for num in range(10): 
         
         if num == 9:
-            poly_fit_ord = 5
+            poly_fit_ord = 4
         else:
             poly_fit_ord = 5
         
@@ -393,6 +393,9 @@ def esi_2dsolution(date):
             threshold = 0.7
         else:
             threshold = 1.0
+            
+        #Added Feb 2015 -- careful.
+        threshold = 2.0
         
         badlines = []
         avgs = []

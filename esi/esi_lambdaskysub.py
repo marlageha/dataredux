@@ -15,6 +15,7 @@ import numpy as np
 import os
 import pickle
 import pyfits
+from scipy.ndimage import gaussian_filter1d
 from scipy.signal import argrelextrema
 from scipy.interpolate import LSQUnivariateSpline
 
@@ -25,6 +26,7 @@ def esi_lambdaskysub(date):
     all_order_mask = pickle.load(open(str(date)+'/Calibs/all_order_masks_'+str(date)+'.p', 'rb'))
     sky_mask = pickle.load(open(str(date)+'/Calibs/sky_mask_'+str(date)+'.p', 'rb'))
     background = pickle.load(open(str(date)+'/Calibs/background_mask_'+str(date)+'.p', 'rb'))
+    bad_pix = pickle.load(open(str(date)+'/Calibs/bad_pix_'+str(date)+'.p', 'rb'))
     
     im1 = open(str(date)+'/Logs/esi_info_'+str(date)+'.dat','r')
     data1 = im1.readlines()
@@ -82,6 +84,8 @@ def esi_lambdaskysub(date):
         print "sky subtracting " +str(obj_id)
         
         lamp = pyfits.getdata(str(date)+'/Calibs/reduced/' + str(obj_id) + '_mean.fits')
+        lamp[bad_pix] = np.median(lamp)
+        
         noise = pyfits.getdata(str(date)+'/Calibs/variance/'+str(obj_id)+'_noise.fits')
     
         #to hold skysubtracked image
@@ -150,12 +154,11 @@ def esi_lambdaskysub(date):
     
             if 9 > num > 6:
                 spaceing = 0.23
-                deg = 1
+                deg = 3
             elif num < 7:
-                spaceing = 0.23
-                deg = 1
-            elif num > 8:
-                spaceing = 0.23
+                spaceing = 0.13
+                deg = 3
+      
             
             cont_space = (sky_lambdas[-1] - sky_lambdas[0])/4096
             
@@ -184,12 +187,12 @@ def esi_lambdaskysub(date):
             blanc_error[all_order_mask[num]] = corrected_error
             #End order loop
             
-        blanc[background] = lamp[background]
-        blanc_error[background] = noise[background]
+        #blanc[background] = lamp[background]
+        #blanc_error[background] = noise[background]
         
         fits = pyfits.PrimaryHDU(blanc)
         fits.writeto(str(date)+'/Calibs/sky_sub/'+str(obj_id)+'_skysub.fits', clobber = "True")
         
-        fits = pyfits.PrimaryHDU(blanc_error)
-        fits.writeto(str(date)+'/Calibs/variance/'+str(obj_id)+'_noise.fits', clobber = "True")
+        #fits = pyfits.PrimaryHDU(blanc_error)
+        #fits.writeto(str(date)+'/Calibs/variance/'+str(obj_id)+'_noise.fits', clobber = "True")
         

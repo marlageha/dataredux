@@ -23,7 +23,7 @@ import pyfits
 import scipy.ndimage 
 import pdb
 
-def esi_lambda():
+def esi_lambda(date):
     
     #Get lines - detected and expected.
     wavelengths = []
@@ -31,7 +31,7 @@ def esi_lambda():
     
     for order_num in range(10):
         #retrieve the line lists, originally from esi but sorted to be good
-        lines = open('Calibs/line_lists/order_lists/wavelengths/order_' + str(order_num), 'r')
+        lines = open(str(date)+'/Calibs/line_lists/order_lists/wavelengths/order_' + str(order_num), 'r')
         data1 = lines.readlines()
         lines.close()
         
@@ -89,7 +89,7 @@ def esi_lambda():
         done = False
         while not done:
             done = True
-            fit = np.poly1d(np.polyfit(x, y, 7))
+            fit = np.poly1d(np.polyfit(x, y, 3))
             resid = y - fit(x)
             std = np.std(resid)
             badindices = np.where(np.abs(resid) > 1.3*std)[0]
@@ -110,7 +110,7 @@ def esi_lambda():
         done = False
         while not done:
             done = True
-            invfit = np.poly1d(np.polyfit(x, y, 5))
+            invfit = np.poly1d(np.polyfit(x, y, 3))
             resid = y - invfit(x)
             std = np.std(resid)
             badindices = np.where(np.abs(resid) > 1.3*std)[0]

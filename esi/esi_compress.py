@@ -11,27 +11,29 @@
 ##############################################################################
 
 from __future__ import division
-import matplotlib.pyplot as plt
 import numpy as np
-import pdb
+import os
 import pickle
 import pyfits
 import scipy.ndimage
 import scipy.signal
+from scipy.ndimage.filters import gaussian_filter1d
 from scipy.ndimage.filters import sobel
-from scipy.stats import binned_statistic
+from scipy.signal import argrelextrema
 import warnings
 
-def esi_compress():
+def esi_compress(date):
     
     #load masks and wavelength solutions
-    cen_mask = pickle.load(open('Calibs/cen_mask.p','rb')) 
-    solutions = pickle.load(open('Calibs/lambda_solutions.p', 'rb'))
-    pix_to_ang = solutions[0]
-    solutions2d = pickle.load(open('Calibs/solution2d.p', 'rb'))
+    cen_mask = pickle.load(open(str(date)+'/Calibs/cen_mask_'+str(date)+'.p','rb')) 
+    #solutions = pickle.load(open(str(date)+'/Calibs/lambda_solutions_'+str(date)+'.p', 'rb'))
+    #pix_to_ang = solutions[0]
+    solutions2d = pickle.load(open(str(date)+'/Calibs/solution2d_'+str(date)+'.p', 'rb'))
+    esiorders = pickle.load(open(str(date)+'/Calibs/order_edges_'+str(date)+'.p', 'rb'))
+    
     
     #get names of lamps, first read in log:
-    im1 = open('Logs/esi_info.dat','r')
+    im1 = open(str(date)+'/Logs/esi_info_'+str(date)+'.dat','r')
     data1 = im1.readlines()
     im1.close()
 
@@ -71,10 +73,17 @@ def esi_compress():
     #Find list of objects 
     names = []
     for line in range(len(good)):
-        if "Object" in good[line][3] and float(good[line][6]) > 600:
+        if ("Object" in good[line][3] and float(good[line][6]) > 600) or ("*" in good[line][2]):
             names.append(good[line][2])
     objects = np.array(list(set(names)))
     objects.sort() #ascending order, modify in place
+    
+    #Make directory to hold spectrum files
+    if not os.path.exists(str(date)+'/Final/spectra/'):
+        os.makedirs(str(date)+'/Final/spectra/')
+        
+    if not os.path.exists(str(date)+'/Final/sig_2_noise/'):
+        os.makedirs(str(date)+'/Final/sig_2_noise/')
 
     #TODO: Autodmate this. 
     full_slit = ['119887', '36363', '37836', '54655', '81315']
@@ -86,28 +95,35 @@ def esi_compress():
         if obj_id in full_slit: 
             
             #should maybe use un_sky_subtracted. Then /reduced/_mean.fits
-            img = pyfits.getdata('Calibs/sky_sub/'+str(obj_id)+'_skysub.fits')
+            img = pyfits.getdata(str(date)+'/Calibs/sky_sub/'+str(obj_id)+'_skysub.fits')
         else: 
-            img = pyfits.getdata('Calibs/sky_sub/'+str(obj_id)+'_skysub.fits')
+            img = pyfits.getdata(str(date)+'/Calibs/sky_sub/'+str(obj_id)+'_skysub.fits')
 
-        noise = pyfits.getdata('Calibs/variance/'+str(obj_id)+'_noise.fits')
+        noise = pyfits.getdata(str(date)+'/Calibs/variance/'+str(obj_id)+'_noise.fits')
     
         #Get rid of bogus values
         med = np.median(img)
+        noise_med = np.median(noise)
+        
+        noise_nan_mask = np.isnan(noise)
         nan_mask = np.isnan(img)
+        
+
+        
         img[nan_mask] = med 
-                
+        noise[noise_nan_mask] = noise_med 
+        
         #Fit polynomials to each order:
         warnings.simplefilter('ignore', np.RankWarning)
 
-        new_points = np.linspace(3000, 11000, 2*40960)
+        new_points = np.linspace(3800, 11000, 2*40960)
 
         spec = 0*new_points    
         error_spec = 0*new_points
     
         sum_weights = 0*new_points
 
-        flat = pyfits.getdata("Calibs/dome_flat.fits")
+        flat = pyfits.getdata(str(date)+'/Calibs/dome_flat_'+str(date)+'.fits')
         order_polys = []
 
         for num in range(len(cen_mask)):
@@ -116,23 +132,43 @@ def esi_compress():
             sol = solutions2d[num] # load 2d wavelength solution
             y, x = np.mgrid[:4096, :2045] # holds x and y coordinates of all pixels
             heights = img[cen_mask[num]] # the actual values of the pixels
+            
+            #smooth = gaussian_filter1d(heights, 20)
+            #peaks = argrelextrema(smooth, np.greater)[0]
+            #peak_lambdas = np.array([lambdas[i] for i in peaks])
+            
+            #get rid of nonsense 
+            #bad_peaks = np.diff(peak_lambdas) < 0.5*np.median(np.diff(peak_lambdas))
+            
+            
+            #   FIND WAVELENGTHS OF CENTRAL PIXELS IN EACH ROW
+            bin_widths = (esiorders[num].xr(range(4096)) - esiorders[num].xl(range(4096)))/2
+            midpoints = esiorders[num].xl(range(4096))+bin_widths
+            bin_cens = sol(midpoints, range(4096))
+            
+            
             errors = noise[cen_mask[num]] # corresponding noise
         
             lambdas = sol(x[cen_mask[num]], y[cen_mask[num]]) # wavelenghts of pixels
             spacing = (lambdas.max() - lambdas.min())/4096
             
+            bin_edges = []
+            for i in range(len(bin_cens)):
+                bin_edges.append(bin_cens[i]-0.5*spacing)
+            bin_edges.append(bin_cens[i]+0.5*spacing) # last edge
     
-            breaks = np.linspace(lambdas.min(), lambdas.max(), 4095) 
-            bin_cens = [breaks[line] + 0.5*spacing for line in range(len(breaks)-1)] 
-            bin_cens = np.array(bin_cens) # give wavenlenght of center of each pixel row
-    
+            #breaks = np.linspace(lambdas.min(), lambdas.max(), 4095) 
+            #bin_cens = [breaks[line] + 0.5*spacing for line in range(len(breaks)-1)] 
+            
+            #bin_cens = peak_lambdas
+            #bin_cens = np.array(bin_cens) # give wavenlength of center of each pixel row
 
-            binned = np.histogram(lambdas, breaks, weights = heights)[0]
-            means = binned/np.histogram(lambdas, breaks)[0] # mean 
+            binned = np.histogram(lambdas, bin_edges, weights = heights)[0]
+            means = binned/np.histogram(lambdas, bin_edges)[0] # mean 
         
             #add errors in quadrature, as usual
-            binned_errors = np.sqrt(np.histogram(lambdas, breaks, weights = errors**2)[0])
-            error_means = binned_errors/np.histogram(lambdas, breaks)[0]
+            binned_errors = np.sqrt(np.histogram(lambdas, bin_edges, weights = errors**2)[0])
+            error_means = binned_errors/np.histogram(lambdas, bin_edges)[0]
         
             #flat_heights = flat[cen_mask[num]]
             #binned_flat =  np.histogram(lambdas, breaks, weights = flat_heights)[0]
@@ -141,11 +177,14 @@ def esi_compress():
             #Fit polynomial - alterantive, can fit polynomial to flats
             x = bin_cens
             y = means #or flat_means
-    
+            
+            poly_med = np.median(y)
+            
             # gets rid of dead pixels and other nonsense.
-            x = x[np.abs(y) < 5] 
-            y = y[np.abs(y) < 5]
+            x = x[np.abs(y) < 10*poly_med] 
+            y = y[np.abs(y) < 10*poly_med]
     
+            
             done = False
             while not done:
                 done = True
@@ -154,11 +193,12 @@ def esi_compress():
                 std = np.std(resid)
                 badindices = np.where(np.abs(resid) > 3*std)[0]
                 
-                if badindices.size > 0 and len(x) - len(badindices) > 3000:
+                if badindices.size > 0 and len(x) - len(badindices) > 3500:
                     done = False
                     x = np.delete(x, badindices)
                     y = np.delete(y, badindices)
-                        
+                    
+            # fit = np.poly1d(np.polyfit(x, y, 10))
             order_polys.append(np.poly1d(fit))    
     
             #interpolate each order to full spectrum
@@ -170,22 +210,24 @@ def esi_compress():
             interp_weights = np.interp(new_points, bin_cens, order_polys[num](bin_cens))
             interp_weights[(new_points < lambdas.min()) + (new_points > lambdas.max())] = 0 #useless data
             
-            interp_weights[interp_weights < 0.2*interp_weights.max()] = 0 
-            interp_weights[(np.abs(interp_order) > 5) + (interp_order < -0.5)] = 0 #getting rid of nonsense
+            interp_weights[interp_weights < 0.1*interp_weights.max()] = 0 
         
             sum_weights = sum_weights + interp_weights**2 #because we've multiplied by the weight twice
     
             interped = interp_weights * interp_order 
+            interped[np.isnan(interped)] = 0
             spec = spec + interped # add to spec for each order (each iteration of for loop)
         
             interped_error = interp_weights * interp_order_error
             error_spec = np.sqrt(error_spec**2 + interped_error**2) #always combine in quadrature
-    
+            #error_spec[np.isnan(error_spec)] = 0
+            
+            
         spec = spec/sum_weights
         error_spec = error_spec/sum_weights
 
-        new_lambdas = np.linspace(3800,9000, 30000) #throwing out edges on both sides
-        new_spec = np.interp(new_lambdas,new_points, spec)
+        new_lambdas = np.linspace(3800,10000, 30000) #throwing out edges on both sides
+        new_spec = np.interp(new_lambdas, new_points, spec)
         new_error = np.sqrt(np.interp(new_lambdas,new_points, error_spec**2))
     
         new_spec[np.isnan(new_spec)] = 1
@@ -197,16 +239,14 @@ def esi_compress():
             #Throw out the parts that aren't gaussian
             filtered = scipy.ndimage.gaussian_filter1d(new_spec, 3)
             resid = new_spec - filtered
-            bad_lines = np.array(range(len(resid)))[resid > 0.15]
             new_spec[np.abs(resid > 0.2)] = 1
 
-            deriv = sobel(new_spec)
-            deriv2 = sobel(deriv)
-            deriv3 = sobel(deriv2)
+            #deriv = sobel(new_spec)
 
-            new_spec[np.abs(deriv3) > 1] = 1
-            new_spec[np.abs(deriv2) > 0.8] = 1
-            new_spec[np.abs(deriv) > 0.7] = 1
+
+            #new_spec[np.abs(deriv3) > 1] = 1
+
+            
             new_error[new_spec == 1] = 1000
     
         if obj_id in full_slit:
@@ -215,9 +255,9 @@ def esi_compress():
             resid = new_spec - filtered
             new_spec[np.abs(resid > 0.3)] = 1
 
-            deriv = sobel(new_spec)
-            deriv2 = sobel(deriv)
-            deriv3 = sobel(deriv2)
+            #deriv = sobel(new_spec)
+            #deriv2 = sobel(deriv)
+            #deriv3 = sobel(deriv2)
             new_error[new_spec == 1] = 1000
             
             #new_spec[np.abs(deriv3) > 1] = 1
@@ -225,8 +265,8 @@ def esi_compress():
             #new_spec[np.abs(deriv) > 0.7] = 1
             
         
-        spec_file = open('Final/spectra/'+str(obj_id)+'_spectrum.dat', 'w')
-        sn_file = open('Final/sig_2_noise/'+str(obj_id)+'_signoise.dat', 'w')
+        spec_file = open(str(date)+'/Final/spectra/'+str(obj_id)+'_spectrum.dat', 'w')
+        sn_file = open(str(date)+'/Final/sig_2_noise/'+str(obj_id)+'_signoise.dat', 'w')
         for line in range(len(new_lambdas)):
             spec_file.write(" ".join([str(new_lambdas[line]), str(new_spec[line]), '\n']))
             sn_file.write(" ".join([str(new_lambdas[line]), str((new_spec/new_error)[line]), '\n']))

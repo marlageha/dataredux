@@ -14,9 +14,10 @@ from esi_solution2d import esi_solution2d
 from esi_2dsolution import esi_2dsolution
 from esi_trace_cen import esi_trace_cen
 from esi_traceflat import esi_traceflat
+from esi_view import esi_view
 
 __all__ = ['esi_setup','esi_mkbias','esi_mkflat','esi_traceflat',
            'esi_reduce', 'esi_cosmic', 'esi_roughpeaks', 'esi_lambda',
            'esi_skysub', 'esi_solution2d', 'esi_gauss', 'esi_lambdaskysub',
-           'esi_compress', 'esi_gaussian', 'esi_2dsolution']
+           'esi_compress', 'esi_gaussian', 'esi_2dsolution', 'esi_view']
 
